@@ -42,9 +42,20 @@ class entrho_calc:
             else:
                 self.monograms[char] = 1
             self.monogram_count += 1
-
+    
     def count_bigrams(self):
+        self.bigrams={}
         for i in range(len(self.text) - 1):
+            bigram = self.text[i:i+2]
+            if bigram in self.bigrams:
+                self.bigrams[bigram] += 1
+            else:
+                self.bigrams[bigram] = 1
+            self.bigram_count += 1
+
+    def count_bigrams_not_overlapped(self):
+        self.bigrams={}
+        for i in range(0, len(self.text) - 1, 2):
             bigram = self.text[i:i+2]
             if bigram in self.bigrams:
                 self.bigrams[bigram] += 1
@@ -71,39 +82,61 @@ class entrho_calc:
 def main():
     # print("######spaces######")
     # text_with_space = entrho_calc("text.txt")
+    # # text_with_space = entrho_calc("lab1/laptiev_fb-22_proskurnia_fb-22_cp1/text.txt")
 
+    # #monograms
     # text_with_space.count_monograms()
     # text_with_space.mono_frequancy_calc()
-    # print("mono freq:")
+    # print("monograms frequancy:")
     # for char, gram in text_with_space.monogram_frequancy.items():
     #     print(f"{char}, {gram:.20f}")
-    # print(f"mono entrophy: {text_with_space.entrophy_calc(text_with_space.monogram_frequancy)}")
+    # print(f"monograms entrophy: {text_with_space.entrophy_calc(text_with_space.monogram_frequancy)}")
 
+    # #birgams overlapped
     # text_with_space.count_bigrams()
     # text_with_space.bigr_frequancy_calc()
-    # print("bigr freq:")
+    # print("bigrams frequancy:")
     # for char, gram in text_with_space.bigrams_frequancy.items():
     #     print(f"{char}, {gram:.20f}")
-    # print(f"bigr entrophy: {text_with_space.entrophy_calc(text_with_space.bigrams_frequancy)}")
+    # print(f"bigrams overlapped entrophy: {text_with_space.entrophy_calc(text_with_space.bigrams_frequancy)}")
 
+    # #birgams not overlapped
+    # text_with_space.count_bigrams_not_overlapped()
+    # text_with_space.bigr_frequancy_calc()
+    # print("bigrams frequancy:")
+    # for char, gram in text_with_space.bigrams_frequancy.items():
+    #     print(f"{char}, {gram:.20f}")
+    # print(f"bigrams not overlapped entrophy: {text_with_space.entrophy_calc(text_with_space.bigrams_frequancy)}")
+
+#===============================================================================================================================
 
     print("######NO spaces######")
     text_without_space = entrho_calc("text.txt", False)
     text_without_space.save_to_file("shit")
 
+    #monograms
     text_without_space.count_monograms()
     text_without_space.mono_frequancy_calc()
-    print("mono freq:")
+    print("monograms frequancy:")
     for char, gram in text_without_space.monogram_frequancy.items():
         print(f"{char}, {gram:.20f}")
-    print(f"mono entrophy: {text_without_space.entrophy_calc(text_without_space.monogram_frequancy)}")
+    print(f"monograms entrophy: {text_without_space.entrophy_calc(text_without_space.monogram_frequancy)}")
 
+    #bigrams overlapped
     text_without_space.count_bigrams()
     text_without_space.bigr_frequancy_calc()
-    print("bigr freq:")
+    print("bigrams frequancy:")
     for char, gram in text_without_space.bigrams_frequancy.items():
         print(f"{char}, {gram:.20f}")
-    print(f"bigr entrophy: {text_without_space.entrophy_calc(text_without_space.bigrams_frequancy)}")
+    print(f"bigrams overllaped entrophy: {text_without_space.entrophy_calc(text_without_space.bigrams_frequancy)}")
+    
+    #bigrams not overlapped
+    text_without_space.count_bigrams_not_overlapped()
+    text_without_space.bigr_frequancy_calc()
+    print("bigrams frequancy:")
+    for char, gram in text_without_space.bigrams_frequancy.items():
+        print(f"{char}, {gram:.20f}")
+    print(f"bigrams not overllaped entrophy: {text_without_space.entrophy_calc(text_without_space.bigrams_frequancy)}")
 
 
 
