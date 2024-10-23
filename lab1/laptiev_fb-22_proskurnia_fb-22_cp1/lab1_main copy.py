@@ -143,7 +143,7 @@ def main():
     # print("######NO spaces######")
     # # text_without_space = entrho_calc("text.txt", False)
     # text_without_space = entrho_calc("lab1/laptiev_fb-22_proskurnia_fb-22_cp1/text.txt", False)
-    # # text_without_space.save_to_file("shit")
+    # # text_without_space.save_to_file("_another_file")
 
     # #monograms
     # text_without_space.count_monograms()
