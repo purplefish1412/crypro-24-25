@@ -1,7 +1,7 @@
 from collections import Counter
 
 
-# Функція для знаходження ключа
+# Функція для знаходження ключа з використанням кількох найпоширеніших літер
 def find_key(file_name, key_len):
     with open(file_name, 'r', encoding='utf-8') as f:
         cipher_text = ''.join(f.read().split())  # Видаляємо пробіли та нові рядки
@@ -10,11 +10,29 @@ def find_key(file_name, key_len):
     grouped_blocks = [''.join([cipher_text[i] for i in range(pos, len(cipher_text), key_len)]) for pos in
                       range(key_len)]
 
+    # Найчастіші літери в російській мові для перевірки
+    common_letters = ['о', 'е', 'а']
     key = []
+
     for block in grouped_blocks:
         most_common_letter = Counter(block).most_common(1)[0][0]
-        shift = (ord(most_common_letter) - ord('о')) % 32  # Порівнюємо з "о", бо вона найчастіша в рос. мові
-        key_letter = chr(ord('а') + shift)
+
+        # Знаходимо зміщення, порівнюючи з кількома найпоширенішими літерами
+        best_shift = None
+        min_error = float('inf')
+
+        for common_letter in common_letters:
+            shift = (ord(most_common_letter) - ord(common_letter)) % 32
+            possible_key_letter = chr(ord('а') + shift)
+
+            # Оцінка зміщення за частотністю
+            error = sum(abs((ord(char) - ord(possible_key_letter)) % 32) for char in block)
+            if error < min_error:
+                min_error = error
+                best_shift = shift
+
+        # Знаходимо букву ключа з найменшою похибкою
+        key_letter = chr(ord('а') + best_shift)
         key.append(key_letter)
 
     return ''.join(key)
@@ -24,7 +42,7 @@ def find_key(file_name, key_len):
 def decrypt_vigenere(cipher_text, key):
     decrypted_text = []
     key_len = len(key)
-    key = "арудазовархимаг" #true key
+
     for i, char in enumerate(cipher_text):
         if char in 'абвгдежзийклмнопрстуфхцчшщъыьэюя':  # Перевірка чи символ в алфавіті
             shift = ord(key[i % key_len]) - ord('а')
@@ -44,8 +62,7 @@ def main():
     # Знаходимо ключ
     key = find_key(file_name, key_len)
     print(f'Знайдений ключ: {key}')
-    key = "арудазовархимаг" #true key
-    print(f'Правильний ключ: {key}')
+    print(f'Правильний ключ: арудазовархимаг')  # Вказуємо правильний ключ для порівняння
 
     # Читаємо шифротекст і розшифровуємо його
     with open(file_name, 'r', encoding='utf-8') as f:
