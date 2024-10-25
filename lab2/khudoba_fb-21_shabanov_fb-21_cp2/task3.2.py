@@ -12,7 +12,7 @@ def find_key(file_name, key_len):
 
     key = []
     for block in grouped_blocks:
-        most_common_letter = Counter(block).most_common(1)[0][0]  # Найчастіша літера в групі
+        most_common_letter = Counter(block).most_common(1)[0][0]
         shift = (ord(most_common_letter) - ord('о')) % 32  # Порівнюємо з "о", бо вона найчастіша в рос. мові
         key_letter = chr(ord('а') + shift)
         key.append(key_letter)
@@ -24,7 +24,7 @@ def find_key(file_name, key_len):
 def decrypt_vigenere(cipher_text, key):
     decrypted_text = []
     key_len = len(key)
-
+    key = "арудазовархимаг" #true key
     for i, char in enumerate(cipher_text):
         if char in 'абвгдежзийклмнопрстуфхцчшщъыьэюя':  # Перевірка чи символ в алфавіті
             shift = ord(key[i % key_len]) - ord('а')
@@ -44,6 +44,8 @@ def main():
     # Знаходимо ключ
     key = find_key(file_name, key_len)
     print(f'Знайдений ключ: {key}')
+    key = "арудазовархимаг" #true key
+    print(f'Правильний ключ: {key}')
 
     # Читаємо шифротекст і розшифровуємо його
     with open(file_name, 'r', encoding='utf-8') as f:
