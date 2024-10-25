@@ -43,11 +43,9 @@ class entrho_calc:
 
     def enthropy(self, df):
         ngram_len = len(df['char'].iloc[0])
-
-        total = df['count'].sum()
-        df['p'] = df['count'] / total
-        # df['p'] = df['count'] / df['count'].sum()
+        df['p'] = df['count'] / df['count'].sum()
         entropy = -sum(df['p'] * df['p'].apply(math.log2))/ngram_len
+
         df = df.sort_values(by='p', ascending=False)
         if self.space == True:
             df.to_csv('mono_freq_with_space.csv', encoding='utf-8')
@@ -65,7 +63,9 @@ class entrho_calc:
             else:
                 self.bi_o[bigram] = 1
         self.bi_o = pd.DataFrame.from_dict(self.bi_o, orient='index', columns=['count']).reset_index().rename(columns={'index': 'char'})
+        
         print('bigrams overlapped enthrophy:', self.enthropy(self.bi_o))
+
         if self.space == True:
             f_name = 'bi_o_space_freq_matrix'
         else:
@@ -81,7 +81,9 @@ class entrho_calc:
             else:
                 self.bi[bigram] = 1
         self.bi = pd.DataFrame.from_dict(self.bi, orient='index', columns=['count']).reset_index().rename(columns={'index': 'char'})
+        
         print('bigrams not overlapped enthrophy:', self.enthropy(self.bi))
+        
         if self.space == True:
             f_name = 'bi_space_freq_matrix'
         else:
