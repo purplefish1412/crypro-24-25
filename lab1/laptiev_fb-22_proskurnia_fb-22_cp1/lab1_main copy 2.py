@@ -66,7 +66,11 @@ class entrho_calc:
                 self.bi_o[bigram] = 1
         self.bi_o = pd.DataFrame.from_dict(self.bi_o, orient='index', columns=['count']).reset_index().rename(columns={'index': 'char'})
         print('bigrams overlapped enthrophy:', self.enthropy(self.bi_o))
-        # self.matrix_bi_freq(self.bi_o, 'bi_o_freq_matrix')
+        if self.space == True:
+            f_name = 'bi_o_space_freq_matrix'
+        else:
+            f_name = 'bi_o_freq_matrix'
+        self.matrix_bi_freq(self.bi_o, f_name)
 
     # bigrams not overlapped
     def bi_count(self):
@@ -78,7 +82,11 @@ class entrho_calc:
                 self.bi[bigram] = 1
         self.bi = pd.DataFrame.from_dict(self.bi, orient='index', columns=['count']).reset_index().rename(columns={'index': 'char'})
         print('bigrams not overlapped enthrophy:', self.enthropy(self.bi))
-        # self.matrix_bi_freq(self.bi, 'bi_freq_matrix')
+        if self.space == True:
+            f_name = 'bi_space_freq_matrix'
+        else:
+            f_name = 'bi_freq_matrix'
+        self.matrix_bi_freq(self.bi, f_name)
 
 
 
