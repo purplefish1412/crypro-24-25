@@ -1,6 +1,5 @@
-import random
-from collections import Counter
-import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt # for plots
+from collections import Counter # for efficient frequency counting
 
 FILENAME_FOR_ENCRYPTION = "./toEncrypt.txt"
 FILENAME_FOR_DECRYPTION = "./toDecrypt.txt"
@@ -9,9 +8,6 @@ ALPHABET = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
 def prepare_text(text):
     text = text.replace('ё', 'е').lower()
     return ''.join([char for char in text if char in ALPHABET])
-
-def generate_key(length):
-    return ''.join(random.choice(ALPHABET) for _ in range(length))
 
 def vigenere_encrypt(plaintext, key):
     ciphertext = []
@@ -24,8 +20,8 @@ def vigenere_encrypt(plaintext, key):
 
 def index_of_coincidence(text):
     n = len(text)
-    freqs = Counter(text)
-    ic = sum(f * (f - 1) for f in freqs.values()) / (n * (n - 1)) if n > 1 else 0
+    mono_freq_counter = Counter(text)
+    ic = sum(freq * (freq - 1) for freq in mono_freq_counter.values()) / (n * (n - 1)) if n > 1 else 0
     return ic
 
 def find_key_length(ciphertext, max_key_length=30):
@@ -38,7 +34,7 @@ def find_key_length(ciphertext, max_key_length=30):
 
 def plot_index_of_coincidence(avg_ics):
     plt.figure(figsize=(10, 6))
-    plt.bar(list(avg_ics.keys()), list(avg_ics.values()), color='y')
+    plt.bar(list(avg_ics.keys()), list(avg_ics.values()), color='yellow')
     plt.xlabel('Довжина ключа')
     plt.ylabel('Індекс відповідності')
     plt.title('Індекси відповідності для різних довжин ключа')
@@ -71,27 +67,27 @@ def main():
     with open(FILENAME_FOR_ENCRYPTION, 'r', encoding='utf-8') as f:
         plaintext = prepare_text(f.read())
     
-    # генерація ключів та шифрування тексту
-    keys = [generate_key(r) for r in [2, 3, 4, 5, random.randint(10, 20)]]
+    # Предефіновані ключі
+    keys = ["ты", "кот", "зима", "весна", "киноактриса", "абстрагирование"]
     encrypted_texts = [(key, vigenere_encrypt(plaintext, key)) for key in keys]
     
-    # підрахунок індексів відповідності
+    # Підрахунок індексів відповідності
     print("Індекси відповідності для текстів:")
     print(f"Відкритий текст: {index_of_coincidence(plaintext)}")
     for key, ciphertext in encrypted_texts:
         ic = index_of_coincidence(ciphertext)
         print(f"Ключ: {key} | Індекс відповідності: {ic}")
     
-    # розшифрування шифротексту з завдання №3
+    # Розшифрування шифротексту з завдання №3
     with open(FILENAME_FOR_DECRYPTION, 'r', encoding='utf-8') as f:
         ciphertext = prepare_text(f.read())
     
-    # визначення довжини ключа та побудова графіка індексів відповідності
+    # Визначення довжини ключа та побудова графіка індексів відповідності
     likely_key_length, avg_ics = find_key_length(ciphertext)
     print(f"\nЙмовірна довжина ключа: {likely_key_length}")
     plot_index_of_coincidence(avg_ics)
     
-    # відновлення ключа та розшифрування
+    # Відновлення ключа та розшифрування
     probable_key = find_vigenere_key(ciphertext, likely_key_length)
     print(f"Відновлений ключ: {probable_key}")
     decrypted_text = decrypt_vigenere(ciphertext, probable_key)
