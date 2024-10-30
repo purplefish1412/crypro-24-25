@@ -1,5 +1,5 @@
-import matplotlib.pyplot as plt # for plots
-from collections import Counter # for efficient frequency counting
+from collections import Counter
+import matplotlib.pyplot as plt
 
 FILENAME_FOR_ENCRYPTION = "./toEncrypt.txt"
 FILENAME_FOR_DECRYPTION = "./toDecrypt.txt"
@@ -20,15 +20,27 @@ def vigenere_encrypt(plaintext, key):
 
 def index_of_coincidence(text):
     n = len(text)
-    mono_freq_counter = Counter(text)
-    ic = sum(freq * (freq - 1) for freq in mono_freq_counter.values()) / (n * (n - 1)) if n > 1 else 0
+    freq_counter = Counter(text)
+    
+    if n > 1:
+        ic_numerator = sum(freq * (freq - 1) for freq in freq_counter.values())
+        ic_denominator = n * (n - 1)
+        ic = ic_numerator / ic_denominator
+    else:
+        ic = 0
+    
     return ic
 
 def find_key_length(ciphertext, max_key_length=30):
     avg_ics = {}
     for key_length in range(1, max_key_length + 1):
-        ics = [index_of_coincidence(ciphertext[i::key_length]) for i in range(key_length)]
+        ics = []
+        for i in range(key_length):
+            nth_subtext = ciphertext[i::key_length]
+            ics.append(index_of_coincidence(nth_subtext))
+        
         avg_ics[key_length] = sum(ics) / len(ics)
+    
     likely_key_length = max(avg_ics, key=avg_ics.get)
     return likely_key_length, avg_ics
 
@@ -42,7 +54,9 @@ def plot_index_of_coincidence(avg_ics):
     plt.show()
 
 def frequency_analysis(text):
-    return Counter(text).most_common()
+    freq_counter = Counter(text)
+    freq_analysis = freq_counter.most_common()
+    return freq_analysis
 
 def decrypt_vigenere(ciphertext, key):
     plaintext = []
@@ -59,35 +73,40 @@ def find_vigenere_key(ciphertext, key_length):
         nth_subtext = ciphertext[i::key_length]
         freq_analysis = frequency_analysis(nth_subtext)
         most_common_letter = freq_analysis[0][0]
-        likely_key_letter = ALPHABET[(ALPHABET.index(most_common_letter) - ALPHABET.index('о')) % len(ALPHABET)]
+        
+        likely_key_letter_index = (
+            ALPHABET.index(most_common_letter) - ALPHABET.index('о')
+        ) % len(ALPHABET)
+        
+        likely_key_letter = ALPHABET[likely_key_letter_index]
         key.append(likely_key_letter)
+    
     return ''.join(key)
 
 def main():
     with open(FILENAME_FOR_ENCRYPTION, 'r', encoding='utf-8') as f:
         plaintext = prepare_text(f.read())
     
-    # Предефіновані ключі
     keys = ["ты", "кот", "зима", "весна", "киноактриса", "абстрагирование"]
     encrypted_texts = [(key, vigenere_encrypt(plaintext, key)) for key in keys]
     
-    # Підрахунок індексів відповідності
+    # підрахунок індексів відповідності
     print("Індекси відповідності для текстів:")
     print(f"Відкритий текст: {index_of_coincidence(plaintext)}")
     for key, ciphertext in encrypted_texts:
         ic = index_of_coincidence(ciphertext)
         print(f"Ключ: {key} | Індекс відповідності: {ic}")
     
-    # Розшифрування шифротексту з завдання №3
+    # розшифрування шифротексту з завдання №3
     with open(FILENAME_FOR_DECRYPTION, 'r', encoding='utf-8') as f:
         ciphertext = prepare_text(f.read())
     
-    # Визначення довжини ключа та побудова графіка індексів відповідності
+    # визначення довжини ключа та побудова графіка індексів відповідності
     likely_key_length, avg_ics = find_key_length(ciphertext)
     print(f"\nЙмовірна довжина ключа: {likely_key_length}")
     plot_index_of_coincidence(avg_ics)
     
-    # Відновлення ключа та розшифрування
+    # відновлення ключа та розшифрування
     probable_key = find_vigenere_key(ciphertext, likely_key_length)
     print(f"Відновлений ключ: {probable_key}")
     decrypted_text = decrypt_vigenere(ciphertext, probable_key)
