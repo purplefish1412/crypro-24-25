@@ -47,13 +47,13 @@ def plot_dr_sequence(collision):
 
 def find_key_length(ciphertext, max_key_length=30):
     avg_ics = {}
-    collision_stats = {}
+    colisions = {}
     for key_length in range(1, max_key_length + 1):
         ics = [index_of_coincidence(ciphertext[i::key_length]) for i in range(key_length)]
         avg_ics[key_length] = sum(ics) / len(ics)
-        collision_stats[key_length] = colision(ciphertext, key_length)
+        colisions[key_length] = colision(ciphertext, key_length)
     likely_key_length = max(avg_ics, key=avg_ics.get)
-    return likely_key_length, avg_ics, collision_stats
+    return likely_key_length, avg_ics, colisions
 
 def plot_index_of_coincidence(avg_ics):
     plt.figure(figsize=(12, 6))
@@ -112,12 +112,12 @@ def main():
     with open(FILENAME_FOR_DECRYPTION, 'r', encoding='utf-8') as f:
         ciphertext = prepare_text(f.read())
     
-    likely_key_length, avg_ics, collision_stats = find_key_length(ciphertext)
+    likely_key_length, avg_ics, colisions = find_key_length(ciphertext)
     print(f"\nЙмовірна довжина ключа: {likely_key_length}")
     
     display_ic_table(avg_ics) # відображення таблиці індексів відповідності
     plot_index_of_coincidence(avg_ics) # побудува графіку індексів відповідності
-    plot_dr_sequence(collision_stats) # побудува графіку для послідовності Dr
+    plot_dr_sequence(colisions) # побудува графіку для послідовності Dr
     probable_key = find_vigenere_key(ciphertext, likely_key_length)
     print(f"\nВідновлений потенційно правильний ключ: {probable_key}")
 
