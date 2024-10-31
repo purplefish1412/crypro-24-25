@@ -100,6 +100,7 @@ def main():
     with open(FILENAME_FOR_ENCRYPTION, 'r', encoding='utf-8') as f:
         plaintext = prepare_text(f.read())
     
+    # Шифрування тексту кожним із ключів та виведення результату
     keys = ["ты", "кот", "зима", "весна", "киноактриса", "абстрагирование"]
     encrypted_texts = [(key, vigenere_encrypt(plaintext, key)) for key in keys]
     
@@ -107,8 +108,9 @@ def main():
     print(f"Відкритий текст: {index_of_coincidence(plaintext)}")
     for key, ciphertext in encrypted_texts:
         ic = index_of_coincidence(ciphertext)
-        print(f"Ключ: {key} | Індекс відповідності: {ic}") # порахувати індекс відповідності для кожного зашифрованого тексту
-
+        print(f"\nКлюч: {key} | Індекс відповідності: {ic}")
+        print(f"Зашифрований текст (перші 200 символів): {ciphertext[:200]}")
+    
     with open(FILENAME_FOR_DECRYPTION, 'r', encoding='utf-8') as f:
         ciphertext = prepare_text(f.read())
     
@@ -124,8 +126,9 @@ def main():
     nearly_decrypted_text = decrypt_vigenere(ciphertext, probable_key)
     print(f"\nМайже розшифрований текст: {nearly_decrypted_text[:200]}...")
 
-    print("-"*100)
+    print("-" * 100)
     guessed_key = "возвращениеджинна"
+    print(f"\nВідновлений правильний ключ: {guessed_key}")
     decrypted_text = decrypt_vigenere(ciphertext, guessed_key)
     print(f"\nПовністю розшифрований текст: {decrypted_text[:200]}...")
 
