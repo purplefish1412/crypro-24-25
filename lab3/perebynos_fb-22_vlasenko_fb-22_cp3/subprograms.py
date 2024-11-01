@@ -1,7 +1,13 @@
-from decimal import Decimal
+from decimal import Decimal, getcontext
+getcontext().prec = 50
+
 import itertools
 
 ALPHABET = "абвгдежзийклмнопрстуфхцчшщьыэюя"
+
+def readText(fileName: str):
+    with open(fileName, "r", encoding="utf-8") as f:
+        return f.read()
 
 def gcdEuclideanExtended(a: int, m: int) -> tuple[int]:
     """
@@ -63,7 +69,7 @@ def countBigrams(data: str) -> tuple[dict[str, int], int]:
     prevChar: str | None = None
 
     for c in data:
-        if prevChar is not None:
+        if prevChar is not None and prevChar in ALPHABET and c in ALPHABET:
             bigramCounts[prevChar + c] += 1
             totalBigramCount += 1
         prevChar = c
