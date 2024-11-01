@@ -41,16 +41,17 @@ class entrho_calc:
         matrix.to_csv(name+'.csv', encoding='utf-8')
 
 
-    def enthropy(self, df):
+    def enthropy(self, df, mono = False):
         ngram_len = len(df['char'].iloc[0])
         df['p'] = df['count'] / df['count'].sum()
         entropy = -sum(df['p'] * df['p'].apply(math.log2))/ngram_len
 
-        df = df.sort_values(by='p', ascending=False)
-        if self.space == True:
-            df.to_csv('mono_freq_with_space.csv', encoding='utf-8')
-        else:
-            df.to_csv('mono_freq.csv', encoding='utf-8')
+        if mono == True:
+            df = df.sort_values(by='p', ascending=False)
+            if self.space == True:
+                df.to_csv('mono_freq_with_space.csv', encoding='utf-8')
+            else:
+                df.to_csv('mono_freq.csv', encoding='utf-8')
 
         return entropy
 
@@ -95,7 +96,7 @@ class entrho_calc:
 def main():
     print('===== with space =====')
     text_with_space = entrho_calc("lab1/laptiev_fb-22_proskurnia_fb-22_cp1/text.txt")
-    print('monograms enthrophy:', text_with_space.enthropy(text_with_space.mono))
+    print('monograms enthrophy:', text_with_space.enthropy(text_with_space.mono, mono=True))
     text_with_space.bi_o_count()
     text_with_space.bi_count()
 

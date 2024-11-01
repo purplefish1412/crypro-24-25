@@ -14,11 +14,11 @@ H_mono = 4.4529625721687855
 H_bi_o = 4.130036128201785
 H_bi = 4.127746677871504
 
-print("R_space_mono:", H_space_mono/space_H0)
-print("R_space_bi_o:", H_space_bi_o/space_H0)
-print("R_space_bi:", H_space_bi/space_H0)
+print("R_space_mono:", 1 - H_space_mono/space_H0)
+print("R_space_bi_o:", 1 - H_space_bi_o/space_H0)
+print("R_space_bi:", 1 - H_space_bi/space_H0)
 
-print("R_mono:", H_mono/H0)
-print("R_bi_o:", H_bi_o/H0)
-print("R_bi:", H_bi/H0)
+print("R_mono:", 1 - H_mono/H0)
+print("R_bi_o:", 1 - H_bi_o/H0)
+print("R_bi:", 1 - H_bi/H0)
 
