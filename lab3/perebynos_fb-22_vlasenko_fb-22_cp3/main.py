@@ -48,7 +48,7 @@ def main():
     print(total)
 
     # frequencies test
-    freqs = sp.calculateFrequency(test_data)
+    freqs = sp.calculateFrequencies(test_data)
     for k, v in freqs.items():
         if v != 0:
             print(f'"{k}": {v}, ')
