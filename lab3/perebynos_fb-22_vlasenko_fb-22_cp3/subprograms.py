@@ -1,6 +1,12 @@
 from typing import Callable
 
+ALPHABET = "абвгдежзийклмнопрстуфхцчшщьыэюя"
+
 def gcdEuclideanExtended(a: int, m: int) -> tuple[int]:
+    """
+    Вираховує НСД(a, m) та повертає відповідні коефіцієнти u, v.
+    gcd(a, m) = um + va.
+    """
     if a == 0:
         return m, 0, 1
     
@@ -9,6 +15,9 @@ def gcdEuclideanExtended(a: int, m: int) -> tuple[int]:
     return gcd, v - (m // a) * u, u
 
 def modularInverse(a: int, m: int) -> tuple[int, bool]:
+    """
+    Повертає обернене a за модулем m. a**(-1) mod m.
+    """
     gcd, v, _ = gcdEuclideanExtended(a, m)
     if gcd != 1:
         print(f"[!] ERROR: Variables a = {a} and m = {m} are not mutually prime!")
@@ -17,8 +26,10 @@ def modularInverse(a: int, m: int) -> tuple[int, bool]:
     # v = a**(-1) mod m.
     return v % m, False
 
-# ax = b mod m.
 def linearCongruence(a: int, b: int, m: int) -> tuple[list[int], bool]:
+    """
+    Повертає списком усі розв'язки лінійного порівняння ax = b mod m.
+    """
     gcd, _, _ = gcdEuclideanExtended(a, m)
     if gcd == 1:
         return [(modularInverse(a, m)[0] * b) % m], False
@@ -28,7 +39,7 @@ def linearCongruence(a: int, b: int, m: int) -> tuple[list[int], bool]:
         print(f"[!] ERROR: gcd(a = {a}, m = {m}) = {gcd} (≠ 1), but b = {b} cannot be divided by {gcd}!!")
         return [], True
     
-    solutions = []
+    solutions: list[int] = []
     a //= gcd
     b //= gcd
     m //= gcd
@@ -36,8 +47,26 @@ def linearCongruence(a: int, b: int, m: int) -> tuple[list[int], bool]:
     root = (modularInverse(a, m)[0] * b) % m
     solutions.append(root)
     
-    step = m
     for r in range(1, gcd):
-        solutions.append(root + r*step)
+        solutions.append(root + r*m)
 
     return solutions, False
+
+def countBigrams(data: str) -> tuple[dict[str, int], int]:
+    """
+    Вираховує загальну кількість біграм, що перетинаються,
+    та кількість кожної з біграм.
+    """
+    totalBigramCount: int = 0
+    bigramCounts: dict[str, int] = {c1 + c2: 0 for c1 in ALPHABET for c2 in ALPHABET}
+    prevChar: str | None = None
+
+    for c in data:
+        if prevChar is not None:
+            bigramCounts[prevChar + c] += 1
+            totalBigramCount += 1
+        prevChar = c
+
+    return bigramCounts, totalBigramCount
+
+### TODO: frequencies calculation function.
