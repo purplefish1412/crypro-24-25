@@ -40,7 +40,7 @@ def main():
     ### TODO: handle & parse text (check for forbidden chars).
 
     # bigram (overlapped) count test.
-    test_data = "ялошара"
+    test_data = "ялошарар"
     bCounts, total = sp.countBigrams(test_data)
     for k, v in bCounts.items():
         if v != 0:

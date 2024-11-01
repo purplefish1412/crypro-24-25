@@ -75,4 +75,4 @@ def calculateFrequencies(data: str) -> dict[str, Decimal]:
     Вираховує частоту кожної біграми у тексті. Повертає найчастіші 5.
     """
     bigramCounts, totalBigramCount = countBigrams(data)
-    return dict(itertools.islice(dict(sorted({bigram: Decimal(count) / Decimal(totalBigramCount) for bigram, count in bigramCounts.items()}.items(), key=lambda item: item[1], reverse=True)), 5))
+    return dict(itertools.islice(dict(sorted({bigram: Decimal(count) / Decimal(totalBigramCount) for bigram, count in bigramCounts.items()}.items(), key=lambda item: item[1], reverse=True)).items(), 5))
