@@ -2,16 +2,40 @@
 from typing import Callable
 import subprograms as sp
 
+TESTDATA = "./data/V2"
+VARDATA = "./data/02.txt"
+EXITMSG = "No integer solutions exist. Exiting..."
+
 def main():
     ### Driver code
+    # inverse test
     a = 341
     m = 960
     gcd, u, v = sp.gcdEuclideanExtended(a, m)
-    print(f"gcd({a}, {m})={gcd}, u={u}, v={v}")
+    print(f"gcd({a}, {m}) = {gcd}, u = {u}, v = {v}")
 
     inverse, err = sp.modularInverse(a, m)
-    if not err:
-        print(f"{a}^(-1) mod {m} = {inverse}")
+    if err:
+        print(EXITMSG)
+        return
+    
+    print(f"{a}^(-1) mod {m} = {inverse}")
+    
+    # linear congruence test
+    a = 17
+    b = 3
+    m = 23
+    solutions, err = sp.linearCongruence(a, b, m)
+    if err:
+        print(EXITMSG)
+        return
+
+    solve = ""
+    for i in solutions:
+        solve += str(i) + " "
+    print(f"{a}x = {b} mod {m}, x = {solve}")
+    ###
+
     return
 
 if __name__ == "__main__":
