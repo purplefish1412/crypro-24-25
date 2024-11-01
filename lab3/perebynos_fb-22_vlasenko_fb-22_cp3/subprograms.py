@@ -1,4 +1,5 @@
 from typing import Callable
+from decimal import Decimal
 
 ALPHABET = "абвгдежзийклмнопрстуфхцчшщьыэюя"
 
@@ -69,4 +70,9 @@ def countBigrams(data: str) -> tuple[dict[str, int], int]:
 
     return bigramCounts, totalBigramCount
 
-### TODO: frequencies calculation function.
+def calculateFrequency(data: str) -> dict[str, Decimal]:
+    """
+    Вираховує частоту кожної біграми у тексті.
+    """
+    bigramCounts, totalBigramCount = countBigrams(data)
+    return {bigram: Decimal(count) / Decimal(totalBigramCount) for bigram, count in bigramCounts.items()}
