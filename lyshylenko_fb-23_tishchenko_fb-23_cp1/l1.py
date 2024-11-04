@@ -1,6 +1,7 @@
 import collections
 import math
 import csv
+import re
 
 # Функція для підрахунку частоти літер
 def let_freq(text):
@@ -36,10 +37,15 @@ def to_csv(filename, counts, frequencies):
         for symbol, count in counts.items():
             writer.writerow([symbol, count, frequencies[symbol]])
 
-# Функція для підготовки тексту, видаляємо пробіли
+# Функція для підготовки тексту, видаляємо непотрібні символи 
 def pre_for_text(text, with_spaces=True):
-    if not with_spaces:
-        text = text.replace(' ', '')  # Видаляємо всі пробіли
+    text = text.lower()  
+    if with_spaces:
+        # Залишаємо тільки малі букви російського алфавіту та пробіли
+        text = re.sub(r'[^а-яё ]', '', text)
+    else:
+        # Залишаємо тільки малі букви російського алфавіту, без пробілів
+        text = re.sub(r'[^а-яё]', '', text)
     return text
 
 # Основна функція для обчислення частот і ентропії
@@ -59,7 +65,6 @@ def proc_for_text(text, with_spaces=True):
     bigram_counts_z_peretunom, bigram_freqz_peretunom = bi_freq(processed_text, overlap=True)
     to_csv(f'bigram_z_peretunom_{"with" if with_spaces else "without"}_spaces.csv', bigram_counts_z_peretunom, bigram_freqz_peretunom)
 
-  
     H1 = calculate_H1(letter_frequencies)
     H2_bez_peretuny = calculate_H2(bigram_bez_peretuny)
     H2_z_peretunom = calculate_H2(bigram_freqz_peretunom)
@@ -72,20 +77,19 @@ def load_text(file_path):
         text = file.read()
     return text
 
-
 def main():
     file_path = 'text_russian.txt'  
     text = load_text(file_path)
 
-   
+    # Обробка тексту з пробілами
     print("Обробка тексту з пробілами...")
     H1_with_spaces, H2_bez_peretuny_with_spaces, H2_z_peretunom_with_spaces = proc_for_text(text, with_spaces=True)
 
-  
+    # Обробка тексту без пробілів
     print("Обробка тексту без пробілів...")
     H1_without_spaces, H2_bez_peretuny_without_spaces, H2_z_peretunom_without_spaces = proc_for_text(text, with_spaces=False)
 
-  
+    # Виведення результатів
     print("Результат записано у CSV файли")
     print(f"Ентропія H1 з пробілами: {H1_with_spaces}")
     print(f"Ентропія H2 без перетину з пробілами: {H2_bez_peretuny_with_spaces}")
@@ -95,6 +99,4 @@ def main():
     print(f"Ентропія H2 без перетину без пробілів: {H2_bez_peretuny_without_spaces}")
     print(f"Ентропія H2 з перетином без пробілів: {H2_z_peretunom_without_spaces}")
 
-
 main()
-
