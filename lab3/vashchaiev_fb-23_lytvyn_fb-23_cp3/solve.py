@@ -105,17 +105,6 @@ def main():
         print("-" * 30)
 
         key_dict = dict()
-        for i in range(len(c_val)):
-            for j in range(len(c_val)):
-                if i != j:
-                    # print(f"{c_val[i] - c_val[j]} = a * {o_val[i] - o_val[j]} mod 31^2")
-                    a = solveEquation(o_val[i] - o_val[j] % 31**2, c_val[i] - c_val[j] % 31**2, 31**2)
-                    if a != None:
-                        # print(f"a = {a}")
-                        # print(f"b = {(c_val[i] - a * o_val[i]) % 31**2}")
-                        key_dict[a] = (c_val[i] - a * o_val[i]) % 31**2
-        
-        key_dict = dict()
         for i in range(len(all_bigrams)):
             for j in range(len(all_bigrams)):
                 if all_bigrams[i][0] != all_bigrams[j][0] and all_bigrams[i][1] != all_bigrams[j][1]:
@@ -133,5 +122,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-    with open("text2.json", "w") as f:
+    with open("text.json", "w") as f:
         json.dump(obj_for_json, f, ensure_ascii=False, indent=4)
