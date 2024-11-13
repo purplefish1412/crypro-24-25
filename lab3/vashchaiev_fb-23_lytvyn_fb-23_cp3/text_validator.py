@@ -3,7 +3,7 @@ from math import log2
 import sys
 
 alph_ = "абвгдежзийклмнопрстуфхцчшщьыэюя"
-bigrams_ = ['аы', 'бй', 'гй', 'дй', 'еы', 'жй', 'жщ', 'зщ', 'иы', 'йй', 'йэ', 'кщ', 'оь', 'пй', 'сй', 'уь', 'уы', 'фж', 'фй', 'фх', 'хй', 'хю', 'цж', 'цй', 'цщ', 'чг', 'чз', 'чй', 'чщ', 'чю', 'шж', 'шз', 'шй', 'шщ', 'шя', 'щб', 'щд', 'щж', 'щз', 'щй', 'щс', 'щф', 'щх', 'щц', 'щщ', 'щы', 'щэ', 'щю', 'щя', 'ьы', 'ыа', 'ыь', 'ыы', 'ыэ', 'эщ', 'эь', 'эы', 'юу', 'юь', 'юы', 'яы', 'яэ']
+bigrams_x = ['аы', 'бй', 'гй', 'дй', 'еы', 'жй', 'жщ', 'зщ', 'иы', 'йй', 'йэ', 'кщ', 'оь', 'пй', 'сй', 'уь', 'уы', 'фж', 'фй', 'фх', 'хй', 'хю', 'цж', 'цй', 'цщ', 'чг', 'чз', 'чй', 'чщ', 'чю', 'шж', 'шз', 'шй', 'шщ', 'шя', 'щб', 'щд', 'щж', 'щз', 'щй', 'щс', 'щф', 'щх', 'щц', 'щщ', 'щы', 'щэ', 'щю', 'щя', 'ьы', 'ыа', 'ыь', 'ыы', 'ыэ', 'эщ', 'эь', 'эы', 'юу', 'юь', 'юы', 'яы', 'яэ']
 
 def freq_symbols(text):
     letters = dict()
@@ -53,34 +53,33 @@ if len(sys.argv) == 1:
     exit()
 
 if sys.argv[1] == "-e":
-    entr = dict()
+    red4key = dict()
     for obj in root:
-        letters = freq_symbols(obj["text"])
-        en = entropy(letters)
+        f_symb = freq_symbols(obj["text"])
+        en = entropy(f_symb)
         re = redundancy(en, alph_)
-        entr[(obj["a"], obj["b"])] = re
+        red4key[(obj["a"], obj["b"])] = re
     
-    entr = dict(sorted(entr.items(), key=lambda item: item[1]))
+    red4key = dict(sorted(red4key.items(), key=lambda item: item[1]))
 
-    for k, v in entr.items():
+    for k, v in red4key.items():
         print(f"{k[0] :<5} {k[1] :<5} {v}")
 
-
-    max_key = max(entr, key=entr.get)
+    min_key = max(red4key, key=red4key.get)
     
     for o in root:
-        if o["a"] == max_key[0] and o["b"] == max_key[1]:
+        if o["a"] == min_key[0] and o["b"] == min_key[1]:
             print(o["text"])
 
 elif sys.argv[1] == "-b":
     x_bigr = dict()
 
     for obj in root:
-        tb = bigrams(obj["text"], False, True)
+        cross_bg = bigrams(obj["text"], False, True)
         sum = 0
-        for b in bigrams_:
-            if b in tb.keys():
-                sum += tb[b]
+        for b in bigrams_x:
+            if b in cross_bg.keys():
+                sum += cross_bg[b]
         x_bigr[(obj["a"], obj["b"])] = sum
 
     x_bigr_s = dict(sorted(x_bigr.items(), key=lambda item: item[1], reverse=True))
@@ -88,10 +87,10 @@ elif sys.argv[1] == "-b":
     for k, v in x_bigr_s.items():
         print(f"{k[0] :<5} {k[1] :<5} {v}")
 
-    max_key = min(x_bigr, key=x_bigr.get)
+    min_key = min(x_bigr, key=x_bigr.get)
 
     for obj in root:
-        if obj["a"] == max_key[0] and obj["b"] == max_key[1]:
+        if obj["a"] == min_key[0] and obj["b"] == min_key[1]:
             print(obj["text"])
 else:
     print("unknown method")

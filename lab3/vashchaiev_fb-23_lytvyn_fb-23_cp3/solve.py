@@ -26,17 +26,15 @@ def findBigrams(text):
 def solveEquation(a, b, m):
     gcd, _, _ = invertElement(a, m)
 
-    res = None
     if gcd == 1:
         _, _, elem = invertElement(a, m)
         # res = b * (elem % m) % m
-        res = b * elem % m
+        return b * elem % m
     elif gcd > 1 and b % gcd == 0:
         _, _, elem = invertElement(int(a / gcd), int(m / gcd))
         first = int(b / gcd * elem % m)
-        res = [first + int(m / gcd) * i for i in range(gcd)]
-            
-    return res
+        return [first + int(m / gcd) * i for i in range(gcd)]
+
 
 # a < b
 def invertElement(a, b):
@@ -100,7 +98,7 @@ def main():
         all_bigrams = []
         for i in o_val:
             for j in c_val:
-                all_bigrams.append([i, j])
+                all_bigrams.append((i, j))
 
         print(all_bigrams)
 
@@ -135,5 +133,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-    with open("text.json", "w") as f:
+    with open("text2.json", "w") as f:
         json.dump(obj_for_json, f, ensure_ascii=False, indent=4)
