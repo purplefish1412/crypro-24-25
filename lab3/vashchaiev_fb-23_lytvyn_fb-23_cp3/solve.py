@@ -98,7 +98,7 @@ def main():
                         key_dict[a] = (all_bigrams[i][1] - a * all_bigrams[i][0]) % 31**2
                     elif a != None and isinstance(a, list):
                         for item in a:
-                            key_dict[a] = (all_bigrams[i][1] - a * all_bigrams[i][0]) % 31**2
+                            key_dict[item] = (all_bigrams[i][1] - item * all_bigrams[i][0]) % 31**2
         
         for a, b in key_dict.items():
             decrypt(text, a, b)
