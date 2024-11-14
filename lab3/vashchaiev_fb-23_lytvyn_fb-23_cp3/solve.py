@@ -35,7 +35,6 @@ def solveEquation(a, b, m):
         first = int(b / gcd * elem % m)
         return [first + int(m / gcd) * i for i in range(gcd)]
 
-
 # a < b
 def invertElement(a, b):
     if a == 0:
@@ -54,9 +53,7 @@ def decrypt(text, a, b):
             val_y = alph.index(text[i]) * 31 + alph.index(text[i + 1])
             res_x = (elem_a * (val_y - b)) % 31**2
             line += alph[res_x // 31] + alph[res_x % 31]
-    # print("a: ", a)
-    # print("b: ", b)
-    # print("text: ", line)
+    print(f"a: {a}, b: {b} -> {line[:30]}...")
 
     obj = {"a": a, "b": b, "text": line}
     obj_for_json.append(obj)
@@ -70,19 +67,7 @@ def filter_text(text):
     return text
 
 def main():
-    # _, _, first_elem = invertElement(8, 13)
-    # _, _, second_elem = invertElement(51, 71)
-    # _, _, third_elem = invertElement(43, 65)
-    # print(first_elem)
-    # print(second_elem)
-    # print(third_elem)
-    # print(solveEquation(5, 12, 19))
-    # print(solveEquation(45, 5, 55))
-    # print(solveEquation(12, 6, 37))
-    # print(solveEquation(14, 21, 98))
-    # print(solveEquation(7, 6, 129))
-
-    bigrams = ["то", "ст", "на", "но", "не"]
+    bigrams = ["ст", "но", "то", "на", "ен"]
 
     with open("text.txt", "r", encoding = "utf-8") as file:
         text = filter_text(file.read())
@@ -108,13 +93,12 @@ def main():
         for i in range(len(all_bigrams)):
             for j in range(len(all_bigrams)):
                 if all_bigrams[i][0] != all_bigrams[j][0] and all_bigrams[i][1] != all_bigrams[j][1]:
-                    # print(f"{all_bigrams[i][0]} -> {all_bigrams[j][0]} ; {all_bigrams[i][1]} -> {all_bigrams[j][1]}")
-                    # print(f"{c_val[i] - c_val[j]} = a * {o_val[i] - o_val[j]} mod 31^2")
                     a = solveEquation(all_bigrams[i][0] - all_bigrams[j][0] % 31**2, all_bigrams[i][1] - all_bigrams[j][1] % 31**2, 31**2)
-                    if a != None and type(a) is not list:
-                        # print(f"a = {a}")
-                        # print(f"b = {(c_val[i] - a * o_val[i]) % 31**2}")
+                    if a != None and not isinstance(a, list):
                         key_dict[a] = (all_bigrams[i][1] - a * all_bigrams[i][0]) % 31**2
+                    elif a != None and isinstance(a, list):
+                        for item in a:
+                            key_dict[a] = (all_bigrams[i][1] - a * all_bigrams[i][0]) % 31**2
         
         for a, b in key_dict.items():
             decrypt(text, a, b)
