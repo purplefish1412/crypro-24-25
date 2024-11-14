@@ -332,12 +332,11 @@ class CryptanalysisSystem:
         return best_result, self.logs
 
 
-
 app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template(r'index.html')
+    return render_template('index.html')
 
 @app.route('/analyze', methods=['POST'])
 def analyze():

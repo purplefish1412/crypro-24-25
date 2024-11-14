@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="ua">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -282,7 +282,6 @@
                     `Знайдений ключ: a = ${data.key.a}, b = ${data.key.b}`;
                 document.getElementById('decrypted-text').textContent = data.decrypted_text;
                 
-                // Додаємо логи аналізу
                 if (data.logs) {
                     data.logs.forEach(log => appendToLog(log));
                 }
