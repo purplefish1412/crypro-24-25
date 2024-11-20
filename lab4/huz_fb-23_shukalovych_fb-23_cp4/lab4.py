@@ -1,9 +1,18 @@
 import random
 import math
+from math_operations import *
 
 YELLOW = "\033[93m"
 BLUE = "\033[94m"
 RESET = "\033[0m"
+
+rsa_keys = {}
+messages = {}
+ciphertext = None       # ШТ
+decrypted_message = None
+signed_message = None   # Підписане повідомлення
+signature = None        # Підпис
+hash_value = None       # Хеш повідомлення
 
 # Функція для перевірки числа на простоту за допомогою тесту Міллера-Рабіна
 def is_prime_miller_rabin(p, k=10):
@@ -38,16 +47,6 @@ def is_prime_miller_rabin(p, k=10):
 
     return True
 
-# Функція для пошуку випадкового простого числа з заданого інтервалу
-def find_random_prime(start, end, k=10):
-    attempts = 0
-    while attempts < 1000:
-        candidate = random.randint(start, end)
-        if is_prime_miller_rabin(candidate, k):
-            return candidate
-        attempts += 1
-    return None
-
 # Функція для генерації випадкового простого числа довжини щонайменше n біт
 def generate_prime(bits, k=10):
     while True:
@@ -72,20 +71,11 @@ def generate_prime_pairs(bits=256):
             return (p, q), (p1, q1)
 
 # Функція для розширеного алгоритму Евкліда
-def extended_gcd(a, b):
-    if a == 0:
-        return b, 0, 1
-    gcd, x1, y1 = extended_gcd(b % a, a)
-    x = y1 - (b // a) * x1
-    y = x1
-    return gcd, x, y
-
-# Функція для знаходження оберненого елемента
 def mod_inverse(e, phi):
-    gcd, x, _ = extended_gcd(e, phi)
-    if gcd != 1:
+    b = extended_euclidean(e, phi)
+    if b is None:
         raise ValueError("Обернений елемент не існує.")
-    return x % phi
+    return b
 
 # Функція для генерації ключової пари RSA
 def generate_rsa_key_pair(bits=256):
@@ -111,15 +101,86 @@ def generate_rsa_key_pair(bits=256):
 
     return public_key, private_key
 
-# Функція для генерації ключових пар для абонентів A і B
-def generate_rsa_keys_for_users(bits=256):
-    # Генерація ключів для абонента A
+def GenerateKeyPair(bits=256):
+    global rsa_keys
     public_key_a, private_key_a = generate_rsa_key_pair(bits)
+    rsa_keys["A"] = {"public_key": public_key_a, "private_key": private_key_a}
 
-    # Генерація ключів для абонентів B
     public_key_b, private_key_b = generate_rsa_key_pair(bits)
+    rsa_keys["B"] = {"public_key": public_key_b, "private_key": private_key_b}
 
-    return (public_key_a, private_key_a), (public_key_b, private_key_b)
+
+# Процедура шифрування повідомлення
+def Encrypt(user):
+    global rsa_keys, messages
+    e, n = rsa_keys[user]["public_key"]
+
+    message = random.randint(1000, 10000)  # Генерація випадкового повідомлення
+    ciphertext = pow(message, e, n)
+
+    # Зберігаємо повідомлення та криптограму в словнику
+    messages[user] = {"message": message, "ciphertext": ciphertext}
+
+    print(f"Повідомлення для {user}: {message}")
+    print(f"Криптограма для {user}: {ciphertext}")
+
+
+# Процедура розшифрування повідомлення
+def Decrypt(user):
+    global messages, decrypted_message, rsa_keys
+    if "ciphertext" not in messages.get(user, {}):
+        print(f"Помилка: Криптограма для {user} відсутня!")
+        return
+    d, p, q = rsa_keys[user]["private_key"]
+    n = p * q
+
+    ciphertext = messages[user]["ciphertext"]
+    decrypted_message = pow(ciphertext, d, n)
+    print(f"Розшифроване повідомлення для {user}: {decrypted_message}")
+
+    if decrypted_message == messages[user]["message"]:
+        print("Розшифрування успішне!")
+    else:
+        print("Помилка розшифрування!")
+
+
+# Процедура для створення цифрового підпису
+def Sign(user):
+    global messages, signature, rsa_keys
+    if "message" not in messages.get(user, {}):
+        print(f"Помилка: Повідомлення для {user} відсутнє!")
+        return
+    d, p, q = rsa_keys[user]["private_key"]
+    n = p * q
+
+    message = messages[user]["message"]
+    hash_value = hash(message)  # Використовуємо просту хеш-функцію
+    signature = pow(hash_value, d, n)
+
+    # Зберігаємо підпис в словнику
+    messages[user]["signature"] = signature
+    print(f"Цифровий підпис для {user}: {signature}")
+
+
+# Процедура для перевірки цифрового підпису
+def Verify(user):
+    global messages, signature, rsa_keys
+    if "signature" not in messages.get(user, {}):
+        print(f"Помилка: Підпис для {user} відсутній!")
+        return
+    e, n = rsa_keys[user]["public_key"]
+
+    signature = messages[user]["signature"]
+
+    # Перевірка підпису
+    verified_hash = pow(signature, e, n)
+    print(f"Перевірений хеш для {user}: {verified_hash}")
+
+    message = messages[user]["message"]
+    if verified_hash == hash(message):
+        print("Підпис правильний!")
+    else:
+        print("Підпис неправильний!")
 
 def main():
     while True:
@@ -127,35 +188,77 @@ def main():
         print("1. Вибір випадкового простого числа")
         print("2. Генерація двох пар простих чисел")
         print("3. Генерація ключових пар RSA для абонентів A та B")
-        print("4. ...")
+        print("4. Перехід до меню процедур")
         print("5. ...")
         print("6. Вийти")
         user_choice = input("Виберіть опцію: ").strip()
         if user_choice == '6':
             print(BLUE + " /}___/}❀\n( • . •)\n/ >    > Byeee" + RESET)
             break
+
         if user_choice == '1':
-            start_interval = 2
-            end_interval = 10 ** 4
-            random_prime = find_random_prime(start_interval, end_interval)
+            random_prime = generate_prime(bits=10)
             if random_prime:
-                print(f"Випадкове просте число з інтервалу [{start_interval}, {end_interval}]: {random_prime}")
+                print(f"Випадкове просте число: {random_prime}")
             else:
-                print(f"Просте число не знайдено в інтервалі [{start_interval}, {end_interval}].")
+                print(f"Просте число не знайдено.")
+
         elif user_choice == '2':
-            bits = 256
-            (p, q), (p1, q1) = generate_prime_pairs(bits)
+            (p, q), (p1, q1) = generate_prime_pairs(bits=256)
             print(f"Пара простих чисел для абонента A: p = {p}, q = {q}")
             print(f"Пара простих чисел для абонента B: p1 = {p1}, q1 = {q1}")
+
         elif user_choice == '3':
-            bits = 256
-            (public_a, private_a), (public_b, private_b) = generate_rsa_keys_for_users(bits)
-            print(f"Відкритий ключ абонента A: {public_a}")
-            print(f"Секретний ключ абонента A: {private_a}")
-            print(f"Відкритий ключ абонента B: {public_b}")
-            print(f"Секретний ключ абонента B: {private_b}")
+            GenerateKeyPair(bits=256)
+            print(f"Відкритий ключ абонента A: {rsa_keys['A']['public_key']}")
+            print(f"Секретний ключ абонента A: {rsa_keys['A']['private_key']}")
+            print(f"Відкритий ключ абонента B: {rsa_keys['B']['public_key']}")
+            print(f"Секретний ключ абонента B: {rsa_keys['B']['private_key']}")
+
         elif user_choice == '4':
-            print("краказябра")
+            while True:
+                print(YELLOW + "\n-♥-Меню процедур-♥-" + RESET)
+                print("0. Повернутись")
+                print("1. Зашифрувати повідомлення для аб. А/В")
+                print("2. Розшифрувати повідомлення для аб. А/В")
+                print("3. Створити повідомлення з цифровим підписом для аб. А/В")
+                print("4. Перевірка цифрового підпису для аб. А/В")
+
+                text_choice = input("Виберіть опцію: ").strip()
+
+                if text_choice == '1':
+                    user = input("Виберіть користувача (A/B): ").strip().upper()
+                    if user in rsa_keys:
+                        Encrypt(user)
+                    else:
+                        print("Невірний вибір користувача або відсутня пара ключів.")
+
+                elif text_choice == '2':
+                    user = input("Виберіть користувача (A/B): ").strip().upper()
+                    if user in rsa_keys:
+                        Decrypt(user)
+                    else:
+                        print("Невірний вибір користувача або відсутня пара ключів.")
+
+                elif text_choice == '3':
+                    user = input("Виберіть користувача для підпису (A/B): ").strip().upper()
+                    if user in rsa_keys:
+                        Sign(user)
+                    else:
+                        print("Невірний вибір користувача або відсутня пара ключів.")
+
+                elif text_choice == '4':
+                    user = input("Виберіть користувача для перевірки підпису (A/B): ").strip().upper()
+                    if user in rsa_keys:
+                        Verify(user)
+                    else:
+                        print("Невірний вибір користувача або відсутня пара ключів.")
+
+                elif text_choice == '0':
+                    break
+                else:
+                    print("Неправильний вибір. Спробуйте знову.")
+
         elif user_choice == '5':
             print("краказябра")
         else:
