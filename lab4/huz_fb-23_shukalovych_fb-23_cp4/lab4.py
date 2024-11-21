@@ -79,7 +79,6 @@ def mod_inverse(e, phi):
 
 # Функція для генерації ключової пари RSA
 def generate_rsa_key_pair(bits=256):
-    # Генерація простих чисел p і q
     p = generate_prime(bits)
     q = generate_prime(bits)
 
@@ -87,15 +86,12 @@ def generate_rsa_key_pair(bits=256):
     n = p * q
     phi = (p - 1) * (q - 1)
 
-    # Вибір відкритого експонента e
     e = 2**16 + 1
     if math.gcd(e, phi) != 1:
         raise ValueError("Невдалий вибір e, знайдено спільний дільник з phi.")
 
-    # Обчислення секретного експонента d
     d = mod_inverse(e, phi)
 
-    # Повернення ключів
     public_key = (e, n)
     private_key = (d, p, q)
 
@@ -109,21 +105,13 @@ def GenerateKeyPair(bits=256):
     public_key_b, private_key_b = generate_rsa_key_pair(bits)
     rsa_keys["B"] = {"public_key": public_key_b, "private_key": private_key_b}
 
-
 # Процедура шифрування повідомлення
-def Encrypt(user):
+def Encrypt(user, message):
     global rsa_keys, messages
     e, n = rsa_keys[user]["public_key"]
 
-    message = random.randint(1000, 10000)  # Генерація випадкового повідомлення
     ciphertext = pow(message, e, n)
-
-    # Зберігаємо повідомлення та криптограму в словнику
     messages[user] = {"message": message, "ciphertext": ciphertext}
-
-    print(f"Повідомлення для {user}: {message}")
-    print(f"Криптограма для {user}: {ciphertext}")
-
 
 # Процедура розшифрування повідомлення
 def Decrypt(user):
@@ -136,13 +124,11 @@ def Decrypt(user):
 
     ciphertext = messages[user]["ciphertext"]
     decrypted_message = pow(ciphertext, d, n)
-    print(f"Розшифроване повідомлення для {user}: {decrypted_message}")
 
     if decrypted_message == messages[user]["message"]:
-        print("Розшифрування успішне!")
+        pass
     else:
         print("Помилка розшифрування!")
-
 
 # Процедура для створення цифрового підпису
 def Sign(user):
@@ -154,27 +140,32 @@ def Sign(user):
     n = p * q
 
     message = messages[user]["message"]
-    hash_value = hash(message)  # Використовуємо просту хеш-функцію
+    hash_value = hash(message)  
     signature = pow(hash_value, d, n)
 
-    # Зберігаємо підпис в словнику
     messages[user]["signature"] = signature
     print(f"Цифровий підпис для {user}: {signature}")
-
 
 # Процедура для перевірки цифрового підпису
 def Verify(user):
     global messages, signature, rsa_keys
-    if "signature" not in messages.get(user, {}):
+    if user not in messages:
+        print(f"Помилка: Повідомлення для {user} відсутнє!")
+        return
+    
+    if "signature" not in messages[user]:
         print(f"Помилка: Підпис для {user} відсутній!")
         return
+    
     e, n = rsa_keys[user]["public_key"]
-
     signature = messages[user]["signature"]
-
-    # Перевірка підпису
+    
     verified_hash = pow(signature, e, n)
-    print(f"Перевірений хеш для {user}: {verified_hash}")
+    #print(f"Перевірений хеш для {user}: {verified_hash}")
+
+    if "message" not in messages[user]:
+        print(f"Помилка: Повідомлення для перевірки підпису відсутнє!")
+        return
 
     message = messages[user]["message"]
     if verified_hash == hash(message):
@@ -182,14 +173,66 @@ def Verify(user):
     else:
         print("Підпис неправильний!")
 
-def main():
+def SendKey(sender, receiver):
+    global rsa_keys, messages
+
+    if sender not in rsa_keys or receiver not in rsa_keys:
+        print(f"Ключі для {sender} або {receiver} не згенеровані.")
+        return
+
+    n_receiver = rsa_keys[receiver]["public_key"][1]  
+
+    k = random.randint(1, n_receiver - 1)
+    print(f"\n{sender} відправляє ключ {k} абоненту {receiver}\n")
+
+    messages[sender] = {"message": k}
+
+    Encrypt(sender, k)  
+    Sign(sender)
+
+    messages[receiver] = {
+        "encrypted_key": messages[sender]["ciphertext"],  
+        "signature": messages[sender]["signature"], 
+        "hash": hash(k), 
+        "sender": sender 
+    }
+
+    print(f"\nЗашифрований ключ: {messages[sender]['ciphertext']}\n")
+
+def ReceiveKey(receiver, sender):
+    global rsa_keys, messages
+
+    if receiver not in rsa_keys or sender not in rsa_keys:
+        print(f"Ключі для {receiver} або {sender} не згенеровані.")
+        return
+
+    if receiver not in messages:
+        print(f"Немає повідомлень для {receiver}.")
+        return
+
+    data = messages[receiver]
+
+    if data["sender"] != sender:
+        print("Дані не відповідають вказаному відправнику.")
+        return
+
+    Decrypt(sender)
+    Verify(sender)
+
+    if data["hash"] == hash(decrypted_message):
+        print(f"\n{receiver} успішно прийняв та розшифрував ключ: {decrypted_message}")
+        print("Підтвердження автентичності пройдено успішно :)")
+    else:
+        print(f"Помилка перевірки підпису або даних. Ключ відхилено.")
+
+def main(message):
     while True:
         print(YELLOW + "\n♥Меню♥" + RESET)
         print("1. Вибір випадкового простого числа")
         print("2. Генерація двох пар простих чисел")
         print("3. Генерація ключових пар RSA для абонентів A та B")
         print("4. Перехід до меню процедур")
-        print("5. ...")
+        print("5. Надсилання ключа")
         print("6. Вийти")
         user_choice = input("Виберіть опцію: ").strip()
         if user_choice == '6':
@@ -229,30 +272,33 @@ def main():
                 if text_choice == '1':
                     user = input("Виберіть користувача (A/B): ").strip().upper()
                     if user in rsa_keys:
-                        Encrypt(user)
+                        Encrypt(user, message)                        
+                        print(f"Повідомлення для {user}: {messages[user]['message']}")
+                        print(f"Криптограма для {user}: {messages[user]['ciphertext']}")
                     else:
-                        print("Невірний вибір користувача або відсутня пара ключів.")
+                        print("Неправильний вибір користувача або відсутня пара ключів.")
 
                 elif text_choice == '2':
                     user = input("Виберіть користувача (A/B): ").strip().upper()
                     if user in rsa_keys:
                         Decrypt(user)
+                        print(f"Розшифроване повідомлення для {user}: {decrypted_message}")
                     else:
-                        print("Невірний вибір користувача або відсутня пара ключів.")
+                        print("Неправильний вибір користувача або відсутня пара ключів.")
 
                 elif text_choice == '3':
                     user = input("Виберіть користувача для підпису (A/B): ").strip().upper()
                     if user in rsa_keys:
                         Sign(user)
                     else:
-                        print("Невірний вибір користувача або відсутня пара ключів.")
+                        print("Неправильний вибір користувача або відсутня пара ключів.")
 
                 elif text_choice == '4':
                     user = input("Виберіть користувача для перевірки підпису (A/B): ").strip().upper()
                     if user in rsa_keys:
                         Verify(user)
                     else:
-                        print("Невірний вибір користувача або відсутня пара ключів.")
+                        print("Неправильний вибір користувача або відсутня пара ключів.")
 
                 elif text_choice == '0':
                     break
@@ -260,9 +306,14 @@ def main():
                     print("Неправильний вибір. Спробуйте знову.")
 
         elif user_choice == '5':
-            print("краказябра")
+            sender = input("Виберіть відправника (A/B): ").strip().upper()
+            receiver = input("Виберіть отримувача (A/B): ").strip().upper()
+            if sender in rsa_keys and receiver in rsa_keys:
+                SendKey(sender, receiver)
+                ReceiveKey(receiver, sender)
         else:
             print("Неправильний вибір. Спробуйте знову.")
 
 if __name__ == "__main__":
-    main()
+    message = random.randint(1000, 10000)  # Генерація випадкового повідомлення
+    main(message)
