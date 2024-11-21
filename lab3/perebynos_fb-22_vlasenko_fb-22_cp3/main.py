@@ -1,56 +1,68 @@
 #!/bin/python
 from typing import Callable
+from itertools import permutations
 import subprograms as sp
+import pprint
 
 TESTDATA = "./data/V2"
 VARDATA = "./data/02.txt"
 EXITMSG = "No integer solutions exist. Skipping...\n"
-MOSTFREQBIGRAMS = ["ст", "но", "то", "на", "ен"]
-MODULUS = len(sp.ALPHABET)
+MOSTFREQBIGRAMS = ["то", "на", "ст", "но", "ен"]
+BANNEDBIGRAMS = ["аь", "оь", "яь", "юь", "еь", "ыь"]
+MODULUS = len(sp.ALPHABET)**2
 
 def main():
-    test_data = sp.readText(TESTDATA)
+    test_data = sp.readText(VARDATA)
 
-    freqs = sp.calculateFrequencies(test_data)
-    givenBigrams: list[str] = list(freqs.keys())
+    freqs = sp.calculateFrequenciesFirst(test_data, 10)
+    pprint.pprint(freqs)
 
-    aSolutions: list[int] = []
-    abSolutions: dict[int, int] = {}
-    # WARNING TODO: iterates through all bigram combos, including duplicate pairs.
-    # Not sure how to fix. I mean, it doesn't affect the overall functionality, but
-    # it's definitely an issue to the performance (govnocod).
-    for i in range(len(givenBigrams)):
-        for j in range(len(givenBigrams)):
-            if i != j:
-                actualBigram1 = givenBigrams[i]
-                expectedBigram1 = MOSTFREQBIGRAMS[i]
+    mf = []
+    for i in freqs:
+        mf.append(i[0])
 
-                actualBigram2 = givenBigrams[j]
-                expectedBigram2 = MOSTFREQBIGRAMS[j]
+    x1 = sp.bigramToNumber(MOSTFREQBIGRAMS[0])
+    x2 = sp.bigramToNumber(MOSTFREQBIGRAMS[1])
+    x = x1 - x2
+    gcd, xInv = sp.gcdEuclideanExtended2(x, MODULUS)
+    if gcd != 1:
+        print(f"GCD of x1-x2 and {MODULUS} != 1: {gcd}")
 
-                # X = ord(char1) * m + ord(char2)
-                X1 = sp.ALPHABET.index(actualBigram1[0]) * MODULUS + sp.ALPHABET.index(actualBigram1[1])
-                Y1 = sp.ALPHABET.index(expectedBigram1[0]) * MODULUS + sp.ALPHABET.index(expectedBigram1[1])
+    for bigram in permutations(mf, 2):
+        if bigram[0] == bigram[1]:
+            continue
 
-                X2 = sp.ALPHABET.index(actualBigram2[0]) * MODULUS + sp.ALPHABET.index(actualBigram2[1])
-                Y2 = sp.ALPHABET.index(expectedBigram2[0]) * MODULUS + sp.ALPHABET.index(expectedBigram2[1])
+        # y = a*x + b mod m
+        # y1 = a*x1 + b mod m
+        # y2 = a*x2 + b mod m
 
-                aVariations, err = sp.linearCongruence((X1 - X2) % MODULUS ** 2, (Y1 - Y2) % MODULUS ** 2, MODULUS ** 2)
-                if err:
-                    print(f"Bigram1: {expectedBigram1} -> {actualBigram1}\nBigram2: {expectedBigram2} -> {actualBigram2}")
-                    print(EXITMSG)
-                    continue
+        # (y1 - y2) = a*(x1 - x2) mod m
+        # a = (y1 - y2) * (x1 - x2)^-1 mod m
+        # b = y1-a*x1 mod m
+        y1 = sp.bigramToNumber(bigram[0])
+        y2 = sp.bigramToNumber(bigram[1])
+        a = ((y1 - y2) * xInv) % MODULUS
+        b = (y1 - a * x1) % MODULUS
 
-                for a in aVariations:
-                    if a not in aSolutions:
-                        aSolutions.append(a)
+        # x = (y-b)*(a**(-1)) mod m
+        gcd, _ = sp.gcdEuclideanExtended2(a, MODULUS)
+        if gcd != 1:
+            continue
 
-                    abSolutions[a] = (Y1 - a * X1) % MODULUS**2
-                
-                print(f"Bigram1: {expectedBigram1} -> {actualBigram1}\nBigram2: {expectedBigram2} -> {actualBigram2}\nSolutions: {aVariations}\n")
+        decryptor = sp.AfineDecryptor(a, b, MODULUS)
+        dec = decryptor.decrypt(test_data)
+        
+        for i in BANNEDBIGRAMS:
+            if dec.find(i) != -1:
+                print(f"Found banned bigram: {i} for a = {a}, b = {b}")
+                break
+        else:
+            print(f"May be key a = {a}, b = {b}")
+            print(f"Text: {dec[:100]}")
+            with open("./data/dec.txt", "w") as f:
+                f.write(dec)
+            return
 
-    print(aSolutions, abSolutions)
-    return
 
 if __name__ == "__main__":
     main()
