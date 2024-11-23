@@ -8,11 +8,12 @@ RESET = "\033[0m"
 
 rsa_keys = {}
 messages = {}
-ciphertext = None       # ШТ
+ciphertext = None  # ШТ
 decrypted_message = None
-signed_message = None   # Підписане повідомлення
-signature = None        # Підпис
-hash_value = None       # Хеш повідомлення
+signed_message = None  # Підписане повідомлення
+signature = None  # Підпис
+hash_value = None  # Хеш повідомлення
+storage = {}
 
 # Функція для перевірки числа на простоту за допомогою тесту Міллера-Рабіна
 def is_prime_miller_rabin(p, k=10):
@@ -47,14 +48,20 @@ def is_prime_miller_rabin(p, k=10):
 
     return True
 
+
 # Функція для генерації випадкового простого числа довжини щонайменше n біт
 def generate_prime(bits, k=10):
-    while True:
-        candidate = random.getrandbits(bits) | (1 << (bits - 1)) | 1
-        if is_prime_miller_rabin(candidate, k):
-            return candidate
+    with open("lab4.txt", "w") as file:
+        while True:
+            candidate = random.getrandbits(bits) | (1 << (bits - 1)) | 1
+            if is_prime_miller_rabin(candidate, k):
+                return candidate
+            else:
+                file.write(f"{candidate}\n")
 
-# Функція для генерації двох пар простих чисел
+            # Функція для генерації двох пар простих чисел
+
+
 def generate_prime_pairs(bits=256):
     while True:
         # Генерація простих чисел для абонента A
@@ -70,6 +77,7 @@ def generate_prime_pairs(bits=256):
         if pq <= p1q1:
             return (p, q), (p1, q1)
 
+
 # Функція для розширеного алгоритму Евкліда
 def mod_inverse(e, phi):
     b = extended_euclidean(e, phi)
@@ -77,33 +85,44 @@ def mod_inverse(e, phi):
         raise ValueError("Обернений елемент не існує.")
     return b
 
+
 # Функція для генерації ключової пари RSA
 def generate_rsa_key_pair(bits=256):
-    p = generate_prime(bits)
-    q = generate_prime(bits)
+    (p, q), (p1, q1) = generate_prime_pairs(bits)
 
-    # Обчислення n та функції Ойлера phi(n)
-    n = p * q
-    phi = (p - 1) * (q - 1)
+    # Обчислення параметрів для абонента A
+    n_a = p * q
+    phi_a = (p - 1) * (q - 1)
 
-    e = 2**16 + 1
-    if math.gcd(e, phi) != 1:
+    # Обчислення параметрів для абонента B
+    n_b = p1 * q1
+    phi_b = (p1 - 1) * (q1 - 1)
+
+    e = 2 ** 16 + 1
+
+    if math.gcd(e, phi_a) != 1 or math.gcd(e, phi_b) != 1:
         raise ValueError("Невдалий вибір e, знайдено спільний дільник з phi.")
 
-    d = mod_inverse(e, phi)
+    d_a = mod_inverse(e, phi_a)
+    d_b = mod_inverse(e, phi_b)
 
-    public_key = (e, n)
-    private_key = (d, p, q)
+    public_key_a = (e, n_a)
+    private_key_a = (d_a, p, q)
 
-    return public_key, private_key
+    public_key_b = (e, n_b)
+    private_key_b = (d_b, p1, q1)
+
+    return (public_key_a, private_key_a), (public_key_b, private_key_b)
+
 
 def GenerateKeyPair(bits=256):
     global rsa_keys
-    public_key_a, private_key_a = generate_rsa_key_pair(bits)
-    rsa_keys["A"] = {"public_key": public_key_a, "private_key": private_key_a}
+    # Генерація ключових пар для абонентів A і B
+    (public_key_a, private_key_a), (public_key_b, private_key_b) = generate_rsa_key_pair(bits)
 
-    public_key_b, private_key_b = generate_rsa_key_pair(bits)
+    rsa_keys["A"] = {"public_key": public_key_a, "private_key": private_key_a}
     rsa_keys["B"] = {"public_key": public_key_b, "private_key": private_key_b}
+
 
 # Процедура шифрування повідомлення
 def Encrypt(user, message):
@@ -112,6 +131,7 @@ def Encrypt(user, message):
 
     ciphertext = pow(message, e, n)
     messages[user] = {"message": message, "ciphertext": ciphertext}
+
 
 # Процедура розшифрування повідомлення
 def Decrypt(user):
@@ -126,9 +146,10 @@ def Decrypt(user):
     decrypted_message = pow(ciphertext, d, n)
 
     if decrypted_message == messages[user]["message"]:
-        pass
+        print("Розшифрування було успішне!")
     else:
         print("Помилка розшифрування!")
+
 
 # Процедура для створення цифрового підпису
 def Sign(user):
@@ -140,28 +161,27 @@ def Sign(user):
     n = p * q
 
     message = messages[user]["message"]
-    hash_value = hash(message)  
+    hash_value = hash(message)
     signature = pow(hash_value, d, n)
-
     messages[user]["signature"] = signature
-    print(f"Цифровий підпис для {user}: {signature}")
+    print(f"Цифровий підпис для {user}: {signature}\n")
+
 
 # Процедура для перевірки цифрового підпису
-def Verify(user):
-    global messages, signature, rsa_keys
+def Verify(user, signature):
+    global messages, rsa_keys
     if user not in messages:
         print(f"Помилка: Повідомлення для {user} відсутнє!")
         return
-    
+
     if "signature" not in messages[user]:
         print(f"Помилка: Підпис для {user} відсутній!")
         return
-    
+
     e, n = rsa_keys[user]["public_key"]
-    signature = messages[user]["signature"]
-    
+
     verified_hash = pow(signature, e, n)
-    #print(f"Перевірений хеш для {user}: {verified_hash}")
+    # print(f"Перевірений хеш для {user}: {verified_hash}")
 
     if "message" not in messages[user]:
         print(f"Помилка: Повідомлення для перевірки підпису відсутнє!")
@@ -174,56 +194,62 @@ def Verify(user):
         print("Підпис неправильний!")
 
 def SendKey(sender, receiver):
-    global rsa_keys, messages
+    global rsa_keys, messages, storage
 
     if sender not in rsa_keys or receiver not in rsa_keys:
         print(f"Ключі для {sender} або {receiver} не згенеровані.")
         return
 
-    n_receiver = rsa_keys[receiver]["public_key"][1]  
+    n_receiver = rsa_keys[receiver]["public_key"][1]
+    e_receiver = rsa_keys[receiver]["public_key"][0]
 
     k = random.randint(1, n_receiver - 1)
     print(f"\n{sender} відправляє ключ {k} абоненту {receiver}\n")
 
     messages[sender] = {"message": k}
+    messages[receiver] = {"message": k}
 
-    Encrypt(sender, k)  
+    Encrypt(receiver, k)
+    print(f"Зашифрований ключ: {messages[receiver]['ciphertext']}\n")
     Sign(sender)
+    s1 = pow(messages[sender]["signature"],e_receiver, n_receiver)
 
-    messages[receiver] = {
-        "encrypted_key": messages[sender]["ciphertext"],  
-        "signature": messages[sender]["signature"], 
-        "hash": hash(k), 
-        "sender": sender 
+    storage[receiver] = {
+        "encrypted_key": messages[receiver]["ciphertext"],
+        "s1": s1,
+        "hash": hash(k),
+        "sender": sender
     }
 
-    print(f"\nЗашифрований ключ: {messages[sender]['ciphertext']}\n")
-
 def ReceiveKey(receiver, sender):
-    global rsa_keys, messages
+    global rsa_keys, storage
 
     if receiver not in rsa_keys or sender not in rsa_keys:
         print(f"Ключі для {receiver} або {sender} не згенеровані.")
         return
 
-    if receiver not in messages:
+    if receiver not in storage:
         print(f"Немає повідомлень для {receiver}.")
         return
 
-    data = messages[receiver]
+    data = storage[receiver]
 
     if data["sender"] != sender:
         print("Дані не відповідають вказаному відправнику.")
         return
 
-    Decrypt(sender)
-    Verify(sender)
+    Decrypt(receiver)
+    d1, p1, q1 = rsa_keys[receiver]["private_key"]
+    n1 = p1 * q1
+    signature = pow(data["s1"], d1, n1)
+    Verify(sender, signature)
 
     if data["hash"] == hash(decrypted_message):
         print(f"\n{receiver} успішно прийняв та розшифрував ключ: {decrypted_message}")
         print("Підтвердження автентичності пройдено успішно :)")
     else:
         print(f"Помилка перевірки підпису або даних. Ключ відхилено.")
+
 
 def main(message):
     while True:
@@ -272,7 +298,7 @@ def main(message):
                 if text_choice == '1':
                     user = input("Виберіть користувача (A/B): ").strip().upper()
                     if user in rsa_keys:
-                        Encrypt(user, message)                        
+                        Encrypt(user, message)
                         print(f"Повідомлення для {user}: {messages[user]['message']}")
                         print(f"Криптограма для {user}: {messages[user]['ciphertext']}")
                     else:
@@ -296,7 +322,8 @@ def main(message):
                 elif text_choice == '4':
                     user = input("Виберіть користувача для перевірки підпису (A/B): ").strip().upper()
                     if user in rsa_keys:
-                        Verify(user)
+                        signature = messages[user]["signature"]
+                        Verify(user, signature)
                     else:
                         print("Неправильний вибір користувача або відсутня пара ключів.")
 
@@ -313,6 +340,7 @@ def main(message):
                 ReceiveKey(receiver, sender)
         else:
             print("Неправильний вибір. Спробуйте знову.")
+
 
 if __name__ == "__main__":
     message = random.randint(1000, 10000)  # Генерація випадкового повідомлення
