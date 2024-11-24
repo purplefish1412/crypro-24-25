@@ -4,15 +4,20 @@ from random import randint
 
 e = 65537
 
+def _GenerateKeyPair(e: int, p: int, q: int) -> tuple[tuple[int, int], tuple[int, int, int]]:
+    n = p*q
+    phi = (p-1)*(q-1)
+    gcd, d = gcd_extended_euclid(e, phi)
+    if gcd != 1:
+        raise ValueError(f"e={e} and phi={phi} are not coprime")
+    
+    return (e, n), (d, p, q)
+
 def GenerateKeyPair(bits: int) -> tuple[tuple[int, int], tuple[int, int, int]]:
     p = get_rsa_prime(bits//2)
     q = get_rsa_prime(bits//2)
 
-    n = p*q
-    phi = (p-1)*(q-1)
-    d = gcd_extended_euclid(e, phi)[1]
-
-    return (e, n), (d, p, q)
+    return _GenerateKeyPair(e, p, q)
 
 def Encrypt(plaintext: int, public_key: tuple[int, int]) -> int:
     return horner_pow(plaintext, public_key[0], public_key[1])

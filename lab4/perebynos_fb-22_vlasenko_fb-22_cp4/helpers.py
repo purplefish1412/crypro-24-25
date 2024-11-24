@@ -13,6 +13,8 @@ def timeit(func):
         return result
     return timeit_wrapper
 
+
+# It looks fast enough
 def gcd_extended_euclid(a: int, m: int) -> tuple[int]:
     """
     u(0) = 1, u(1) = 0, u(i+1) = u(i-1) - q(i) * u(i);
@@ -31,14 +33,32 @@ def gcd_extended_euclid(a: int, m: int) -> tuple[int]:
 
     return a, u0 % modulo
 
-def horner_pow(x: int, a: int, m: int):
+
+# I think this is the fastest thing you 
+# can do with Horner's scheme in python.
+def horner_pow(x: int, a: int, m: int) -> int:
     k = a.bit_length()
     y = 1
     for i in range(k-1, -1, -1):
-        y = (y*y) % m
-        y = (y * (x**((a >> i) & 1))) % m
+        y = (y * y) % m
+        y = (y * (x if (a >> i) & 1 else 1)) % m
     
     return y
+
+
+# It is even faster than the previous one, 
+# probably because there is no method call 
+# and no need to create a range for iteration. 
+def horner_pow_2(x: int, a: int, m: int) -> int:
+    y = 1
+    while a:
+        if a & 1:
+            y = (y * x) % m
+        x = (x * x) % m
+        a >>= 1
+    
+    return y
+
 
 def jacobi_symbol(a: int, n: int) -> int:
     # n odd, greater than 1
@@ -55,9 +75,9 @@ def jacobi_symbol(a: int, n: int) -> int:
         return 1
 
     twos = 0
-    while a % 2 == 0:
-        twos ^=1
-        a //= 2
+    while a & 1 == 0:
+        twos ^= 1
+        a >>= 1
 
     twos = -1 if ((n**2-1) // 8) % 2 == 1 and twos != 0 else 1
 
@@ -65,6 +85,36 @@ def jacobi_symbol(a: int, n: int) -> int:
         return twos
     
     return jacobi_symbol(n, a) * (-1 if ((a-1) // 2) % 2 == 1 and ((n-1) // 2) % 2 == 1 else 1) * twos
+
+
+# https://en.wikipedia.org/wiki/Jacobi_symbol#Implementation_in_C++
+def jacobi_symbol_2(a: int, n: int) -> int:
+    if not n > 1 or n & 1 == 0:
+        raise ValueError(f"n={n} must be odd and greater than 1")
+    
+    a %= n
+    # XOR of bits 1 and 2 determines sign of return value
+    t = 0
+    while a != 0:
+        while a & 0b11 == 0:
+            a >>= 2
+        if a & 1 == 0:
+            # Could be "^= n & 6"; we only care about bits 1 and 2
+            t ^= n
+            a >>= 1
+        
+        # Flip sign if a % 4 == n % 4 == 3
+        t ^= a & n & 2
+        r = n % a
+        n = a
+        a = r
+    
+    if n != 1:
+        return 0
+    elif (t ^ (t >> 1)) & 2:
+        return -1
+    else:
+        return 1
 
 
 def main():
@@ -91,6 +141,29 @@ def main():
     assert jacobi_symbol(28, 47) == 1
     print("All jacobi symbol tests passed.")
 
+    # jacobi symbol tests
+    assert jacobi_symbol_2(13, 187) == -1
+    assert jacobi_symbol_2(2, 3) == -1
+    assert jacobi_symbol_2(3, 5) == -1
+    assert jacobi_symbol_2(5, 11) == 1
+    assert jacobi_symbol_2(10, 21) == -1
+    assert jacobi_symbol_2(7, 15) == -1
+    assert jacobi_symbol_2(9, 19) == 1
+    assert jacobi_symbol_2(8, 23) == 1
+    assert jacobi_symbol_2(12, 25) == 1
+    assert jacobi_symbol_2(14, 27) == -1
+    assert jacobi_symbol_2(15, 29) == -1
+    assert jacobi_symbol_2(16, 31) == 1
+    assert jacobi_symbol_2(18, 33) == 0
+    assert jacobi_symbol_2(20, 35) == 0
+    assert jacobi_symbol_2(21, 37) == 1
+    assert jacobi_symbol_2(22, 39) == 1
+    assert jacobi_symbol_2(24, 41) == -1
+    assert jacobi_symbol_2(25, 43) == 1
+    assert jacobi_symbol_2(26, 45) == 1
+    assert jacobi_symbol_2(28, 47) == 1
+    print("All jacobi symbol 2 tests passed.")
+
     # horner pow tests
     assert horner_pow(2, 3, 5) == 3
     assert horner_pow(3, 4, 7) == 4
@@ -113,6 +186,29 @@ def main():
     assert horner_pow(37, 38, 73) == 55
     assert horner_pow(39, 40, 79) == 40
     print("All horner pow tests passed.")
+
+    # horner pow tests
+    assert horner_pow_2(2, 3, 5) == 3
+    assert horner_pow_2(3, 4, 7) == 4
+    assert horner_pow_2(5, 6, 11) == 5
+    assert horner_pow_2(7, 8, 13) == 3
+    assert horner_pow_2(9, 10, 17) == 13
+    assert horner_pow_2(11, 12, 19) == 1
+    assert horner_pow_2(13, 14, 23) == 12
+    assert horner_pow_2(15, 16, 29) == 7
+    assert horner_pow_2(17, 18, 31) == 16
+    assert horner_pow_2(19, 20, 37) == 9
+    assert horner_pow_2(21, 22, 41) == 31
+    assert horner_pow_2(23, 24, 43) == 41
+    assert horner_pow_2(25, 26, 47) == 21
+    assert horner_pow_2(27, 28, 53) == 13
+    assert horner_pow_2(29, 30, 59) == 29
+    assert horner_pow_2(31, 32, 61) == 15
+    assert horner_pow_2(33, 34, 67) == 33
+    assert horner_pow_2(35, 36, 71) == 36
+    assert horner_pow_2(37, 38, 73) == 55
+    assert horner_pow_2(39, 40, 79) == 40
+    print("All horner pow 2 tests passed.")
 
     # Find reverse element in Zm
     assert gcd_extended_euclid(0, 0) == (0, 0)
