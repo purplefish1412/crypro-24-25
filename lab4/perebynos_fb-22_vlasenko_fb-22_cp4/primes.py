@@ -26,8 +26,8 @@ def get_prime(bits_count: int) -> int:
     return _get_prime(bits_count, k, miller_rabin_primality_test)
 
 def _get_rsa_prime(bits_count: int, k: int, test_function: Callable[[int, int], bool]) -> int:
-    pp = _get_prime(bits_count-1, k, test_function)
     while True:
+        pp = _get_prime(bits_count-1, k, test_function)
         p = (pp << 1) + 1
 
         if not trial_division_test(p, trial_divisions_count):
@@ -35,8 +35,6 @@ def _get_rsa_prime(bits_count: int, k: int, test_function: Callable[[int, int], 
     
         if test_function(p, k):
             return p
-        
-        pp = _get_prime(bits_count-1, k, test_function)
 
 def get_rsa_prime(bits_count: int) -> int:
     return _get_rsa_prime(bits_count, k, miller_rabin_primality_test)
