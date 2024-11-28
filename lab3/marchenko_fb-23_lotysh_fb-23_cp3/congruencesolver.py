@@ -1,4 +1,4 @@
-#Finds the Bézout coefficient for a and the GCD
+#Finds the Bézout coefficient for a mod b and the GCD
 def ExtendedEuclidean(a,b):
     old_r, r = a, b
     old_s, s = 1, 0
