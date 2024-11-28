@@ -14,6 +14,8 @@ def ExtendedEuclidean(a,b):
 #Use CongruenceSolve(a,b,m)[0] to get the solution if you know there's only one
 #(There's only 1 solution if a and m are coprime)
 def CongruenceSolve(a,b,m):
+    if(b==0):
+        return [0]
     inverse, gcd = ExtendedEuclidean(a,m)
     if(gcd!=1):
         gcd=ExtendedEuclidean(gcd, b)[1]
