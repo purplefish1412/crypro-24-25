@@ -74,9 +74,10 @@ if __name__ == "__main__":
                     if len(a)==1:
                         a=a[0]
                         b=(cipherbigrams[x]-a*commonbigrams[i])%m**2
-                        text = Decrypt("./out.txt", a, b)
-                        if text != "" and CountImpossibleBigrams(text)==0 and (a,b) not in keys:
-                            keys.append((a, b))
+                        if (a,b) not in keys:
+                            text = Decrypt("./out.txt", a, b)
+                            if text != "" and CountImpossibleBigrams(text)==0:
+                                keys.append((a, b))
     print("Possible keys: "+str(keys))
                         
     
