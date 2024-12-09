@@ -57,3 +57,33 @@ def generate_random_prime(bit_length):
 bit_length = 256  # Довжина числа в бітах
 random_prime = generate_random_prime(bit_length)
 print(f"Випадкове просте число ({bit_length} біт): {random_prime}")
+
+
+def generate_prime_pairs(bit_length):
+    """
+    Генерація двох пар простих чисел (p, q) та (p1, q1), де pq <= p1q1.
+    """
+    # Генерація першої пари для абонента A
+    p = generate_random_prime(bit_length)
+    q = generate_random_prime(bit_length)
+    
+    # Генерація другої пари для абонента B
+    p1 = generate_random_prime(bit_length)
+    q1 = generate_random_prime(bit_length)
+
+    # Перевірка умови pq <= p1q1
+    while (p * q) > (p1 * q1):
+        p1 = generate_random_prime(bit_length)
+        q1 = generate_random_prime(bit_length)
+    
+    return (p, q), (p1, q1)
+
+# Використання функції
+bit_length = 256  # Довжина числа в бітах
+pair_A, pair_B = generate_prime_pairs(bit_length)
+
+# Вивід результатів
+print(f"Пара для абонента A: p = {pair_A[0]}, q = {pair_A[1]}")
+print(f"Пара для абонента B: p1 = {pair_B[0]}, q1 = {pair_B[1]}")
+
+
