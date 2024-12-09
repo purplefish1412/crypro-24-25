@@ -21,34 +21,35 @@ def mod_invert(a, m):
         a, m = m, a % m
         x0, x1 = x1 - q * x0, x0
 
-    return x1 + m0 if x1 < 0 else x1 
+    return x1 + m0 if x1 < 0 else x1
 
-p = pn.get_p(2 ** 256, 2 ** 512)
-q = pn.get_p(2 ** 256, 2 ** 512)    
-p1 = pn.get_p(2 ** 512, 2 ** 1024)
-q1 = pn.get_p(2 ** 512, 2 ** 1024)
+class Keys:
+    def __init__(self, d, p, q, n, e):
+        self.d = d
+        self.p = p
+        self.q = q
+        self.n = n
+        self.e = e
 
-n = p*q
-n1 = p1*q1
+# a, b діапазон довжини p, q в бітах
+def GenerateKeyPair(a, b):
+    min = 2 ** a
+    max = 2 ** b
+    p = pn.get_p(min, max)
+    q = pn.get_p(min, max)
+    n = p*q
+    fn = (p-1)*(q-1)
+    e = get_e(fn)
+    d = mod_invert(e, fn) % fn
+    return Keys(d=d, p=p, q=q, n=n, e=e)
 
-fn = (p-1)*(q-1)
-fn1 = (p1-1)*(q1-1)
+if __name__ == "__main__":
+    # При цьому пари чисел беруться так, щоб p * q <= p1 * q1
+    alice = GenerateKeyPair(256, 384)
+    bob = GenerateKeyPair(384, 512)
 
-e = get_e(fn)
-e1 = get_e(fn1)
+    json_obj.append({"name": "Alice", "my_keys": {"d": alice.d, "p": alice.p, "q": alice.q, "n": alice.n, "e": alice.e}, "open_for_me": {"n": bob.n, "e": bob.e}})
+    json_obj.append({"name": "Bob", "my_keys": {"d": bob.d, "p": bob.p, "q": bob.q, "n": bob.n, "e": bob.e}, "open_for_me": {"n": alice.n, "e": alice.e}})
 
-d = mod_invert(e, fn) % fn
-d1 = mod_invert(e1, fn1) % fn1
-
-print("Alice")
-print("Open key n&e:", n, e)
-print("Privat key d:", d)
-print("Bob")
-print("Open key n&e:", n1, e1)
-print("Privat key d:", d1)
-
-json_obj.append({"name": "Alice", "my_keys": {"d": d, "p": p, "q": q, "n": n, "e": e}, "bob_open_key": {"n": n1, "e": e1}})
-json_obj.append({"name": "Bob", "my_keys": {"d": d1, "p": p1, "q": q1, "n": n1, "e": e1}, "alice_open_key": {"n": n, "e": e}})
-
-with open("keys.json", "w") as f:
-    json.dump(json_obj, f, ensure_ascii=False, indent=4)
+    with open("keys.json", "w") as f:
+        json.dump(json_obj, f, ensure_ascii=False, indent=4)
