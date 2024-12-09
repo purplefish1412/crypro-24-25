@@ -122,11 +122,14 @@ def main():
     lang_bigram_pairs = list(permutations(language_bigrams, 2))
     cipher_bigram_pairs = list(permutations(cipher_bigrams, 2))
 
+    # counter = 0
+
     # Перебір всіх пар біграм і знаходження ключів
     for lang_pair in lang_bigram_pairs:
         for cipher_pair in cipher_bigram_pairs:
             try:
                 keys = solve_for_keys(lang_pair, cipher_pair, CHAR_TO_NUM, M)
+                counter += 1
                 for a, b in keys:
                     decrypted_text = decrypt_affine_bigram(cipher_text, a, b, CHAR_TO_NUM, NUM_TO_CHAR, M)
                     if is_russian_text_advanced(decrypted_text, RUSSIAN_CHAR_SET, FREQUENT_LETTERS, RARE_LETTERS, COMMON_TRIGRAMS):
@@ -139,6 +142,8 @@ def main():
                         return
             except ValueError:
                 continue
+
+    # print(counter)
 
 if __name__ == "__main__":
     main()
