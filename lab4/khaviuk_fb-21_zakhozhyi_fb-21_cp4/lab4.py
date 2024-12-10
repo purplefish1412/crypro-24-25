@@ -1,3 +1,4 @@
+
 import random
 from math import gcd
 
@@ -198,7 +199,7 @@ def main(bit_length=256):
     private_a, public_a, private_b, public_b = rsa_setup(bit_length)
 
     # Повідомлення для шифрування та підпису
-    message = "My very very very secret message (CVV code of my card number is 777)"  # Наприклад, текст повідомлення в числовому форматі
+    message = 37462138794623786428372
 
     # Абонент A шифрує повідомлення для B
     ciphertext = encrypt(message, public_b)
@@ -207,17 +208,14 @@ def main(bit_length=256):
 
     # Абонент B розшифровує повідомлення
     decrypted_message = decrypt(ciphertext, private_b)
-    print("-"*100)
     print(f"Розшифроване повідомлення: {decrypted_message}\n")
 
     # Абонент A створює цифровий підпис для повідомлення
     signature = sign(message, private_a)
-    print("-"*100)
     print(f"Цифровий підпис: {signature}\n")
 
     # Абонент B перевіряє цифровий підпис
     is_valid = verify(message, signature, public_a)
-    print("-"*100)
     print(f"Цифровий підпис вірний: {is_valid}\n")
 
 #-----------------------------------------------------------------------
@@ -232,16 +230,14 @@ def main(bit_length=256):
     # Відправник A формує повідомлення
     encrypted_key, encrypted_signature = send_key(k, private_a, public_a, public_b)
 
-    print("-"*100)
     print(f"Зашифрований ключ: {encrypted_key}\n")
     print(f"Зашифрований підпис: {encrypted_signature}\n")
 
     # Одержувач B приймає повідомлення
     decrypted_key, is_valid_signature = receive_key(encrypted_key, encrypted_signature, private_b, public_a)
 
-    print("-"*100)
     print(f"Розшифрований ключ: {decrypted_key}\n")
-    print(f"Підпис коректний: {is_valid_signature}\n")
+    print(f"Підпис коректний: {is_valid_signature}")
     print("-"*100)
 
 if __name__ == "__main__":
