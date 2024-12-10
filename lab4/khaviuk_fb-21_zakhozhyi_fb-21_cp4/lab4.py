@@ -4,7 +4,7 @@ from math import gcd
 
 #-------------------------option 1-------------------------
 
-# Перевірка на простоту методом пробних ділень.
+# Перевірка на простоту методом пробних ділень
 def is_prime_trial_division(n):
     if n < 2:
         return False
@@ -13,7 +13,7 @@ def is_prime_trial_division(n):
             return False
     return True
 
-# Імовірнісний тест Міллера-Рабіна.
+# Імовірнісний тест Міллера-Рабіна
 def miller_rabin_test(n, k=5):
     if n <= 1:
         return False
@@ -44,7 +44,7 @@ def miller_rabin_test(n, k=5):
             return False
     return True
 
-# Генерація випадкового простого числа заданої довжини в бітах.
+# Генерація випадкового простого числа заданої довжини в бітах
 def generate_random_prime(bit_length):
     while True:
         candidate = random.getrandbits(bit_length) | (1 << (bit_length - 1)) | 1
@@ -53,7 +53,7 @@ def generate_random_prime(bit_length):
 
 #-------------------------option 2-------------------------
 
-# Генерація двох пар простих чисел (p, q) та (p1, q1), де pq <= p1q1.
+# Генерація двох пар простих чисел (p, q) та (p1, q1), де pq <= p1q1
 def generate_prime_pairs(bit_length):
     # Генерація першої пари для абонента A
     p = generate_random_prime(bit_length)
@@ -72,7 +72,7 @@ def generate_prime_pairs(bit_length):
 
 #-------------------------option 3-------------------------
 
-# Генерує секретний та відкритий ключі для RSA.
+# Генерує секретний та відкритий ключі для RSA
 def generate_rsa_keypair(bit_length):
     # Генерація простих чисел p та q
     p = generate_random_prime(bit_length)
@@ -97,7 +97,7 @@ def generate_rsa_keypair(bit_length):
     # Повернення секретного (d, p, q) та відкритого (e, n) ключів
     return (d, p, q), (e, n)
 
-# Побудова схем RSA для абонентів A та B.
+# Побудова схем RSA для абонентів A та B
 def rsa_setup(bit_length):
     # Генерація ключових пар для абонента A
     private_key_a, public_key_a = generate_rsa_keypair(bit_length)
@@ -114,19 +114,19 @@ def encrypt(message, public_key):
     e, n = public_key
     return pow(message, e, n)
 
-# Функція розшифрування повідомлення.
+# Функція розшифрування повідомлення
 def decrypt(ciphertext, private_key):
     d, p, q = private_key
     n = p * q
     return pow(ciphertext, d, n)
 
-# Функція створення цифрового підпису.
+# Функція створення цифрового підпису
 def sign(message, private_key):
     d, p, q = private_key
     n = p * q
     return pow(message, d, n)
 
-# Функція перевірки цифрового підпису.
+# Функція перевірки цифрового підпису
 def verify(message, signature, public_key):
     e, n = public_key
     return pow(signature, e, n) == message
