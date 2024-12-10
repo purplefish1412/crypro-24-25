@@ -1,12 +1,10 @@
 import random
 from math import gcd
 
-# ---------------- option 1 ----------------------------------------
+#-------------------------option 1-------------------------
 
+# Перевірка на простоту методом пробних ділень.
 def is_prime_trial_division(n):
-    """
-    Перевірка на простоту методом пробних ділень.
-    """
     if n < 2:
         return False
     for p in [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31]:
@@ -14,10 +12,8 @@ def is_prime_trial_division(n):
             return False
     return True
 
+# Імовірнісний тест Міллера-Рабіна.
 def miller_rabin_test(n, k=5):
-    """
-    Імовірнісний тест Міллера-Рабіна.
-    """
     if n <= 1:
         return False
     if n <= 3:
@@ -47,26 +43,17 @@ def miller_rabin_test(n, k=5):
             return False
     return True
 
+# Генерація випадкового простого числа заданої довжини в бітах.
 def generate_random_prime(bit_length):
-    """
-    Генерація випадкового простого числа заданої довжини в бітах.
-    """
     while True:
         candidate = random.getrandbits(bit_length) | (1 << (bit_length - 1)) | 1
         if is_prime_trial_division(candidate) and miller_rabin_test(candidate):
             return candidate
 
-# Використання функції
-bit_length = 256  # Довжина числа в бітах
-random_prime = generate_random_prime(bit_length)
-print(f"Випадкове просте число ({bit_length} біт): {random_prime}")
+#-------------------------option 2-------------------------
 
-# ---------------- option 2 ----------------------------------------
-
+# Генерація двох пар простих чисел (p, q) та (p1, q1), де pq <= p1q1.
 def generate_prime_pairs(bit_length):
-    """
-    Генерація двох пар простих чисел (p, q) та (p1, q1), де pq <= p1q1.
-    """
     # Генерація першої пари для абонента A
     p = generate_random_prime(bit_length)
     q = generate_random_prime(bit_length)
@@ -82,21 +69,10 @@ def generate_prime_pairs(bit_length):
     
     return (p, q), (p1, q1)
 
-# Використання функції
-bit_length = 256  # Довжина числа в бітах
-pair_A, pair_B = generate_prime_pairs(bit_length)
+#-------------------------option 3-------------------------
 
-# Вивід результатів
-print(f"Пара для абонента A: p = {pair_A[0]}, q = {pair_A[1]}")
-print(f"Пара для абонента B: p1 = {pair_B[0]}, q1 = {pair_B[1]}")
-
-
-# ---------------- option 3 ----------------------------------------
-
+# Генерує секретний та відкритий ключі для RSA.
 def generate_rsa_keypair(bit_length):
-    """
-    Генерує секретний та відкритий ключі для RSA.
-    """
     # Генерація простих чисел p та q
     p = generate_random_prime(bit_length)
     q = generate_random_prime(bit_length)
@@ -120,10 +96,8 @@ def generate_rsa_keypair(bit_length):
     # Повернення секретного (d, p, q) та відкритого (e, n) ключів
     return (d, p, q), (e, n)
 
+# Побудова схем RSA для абонентів A та B.
 def rsa_setup(bit_length):
-    """
-    Побудова схем RSA для абонентів A та B.
-    """
     # Генерація ключових пар для абонента A
     private_key_a, public_key_a = generate_rsa_keypair(bit_length)
 
@@ -132,75 +106,31 @@ def rsa_setup(bit_length):
 
     return private_key_a, public_key_a, private_key_b, public_key_b
 
-# Використання функції
-bit_length = 256  # Довжина простих чисел
-private_a, public_a, private_b, public_b = rsa_setup(bit_length)
+#-------------------------option 4-------------------------
 
-# Вивід результатів
-print(f"Відкритий ключ A: e = {public_a[0]}, n = {public_a[1]}")
-print(f"Секретний ключ A: d = {private_a[0]}, p = {private_a[1]}, q = {private_a[2]}")
-print(f"Відкритий ключ B: e = {public_b[0]}, n = {public_b[1]}")
-print(f"Секретний ключ B: d = {private_b[0]}, p = {private_b[1]}, q = {private_b[2]}")
-
-
-# ---------------- option 4 ----------------------------------------
-
+# Функція шифрування повідомлення.
 def encrypt(message, public_key):
-    """
-    Функція шифрування повідомлення.
-    """
     e, n = public_key
     return pow(message, e, n)
 
+# Функція розшифрування повідомлення.
 def decrypt(ciphertext, private_key):
-    """
-    Функція розшифрування повідомлення.
-    """
     d, p, q = private_key
     n = p * q
     return pow(ciphertext, d, n)
 
+# Функція створення цифрового підпису.
 def sign(message, private_key):
-    """
-    Функція створення цифрового підпису.
-    """
     d, p, q = private_key
     n = p * q
     return pow(message, d, n)
 
+# Функція перевірки цифрового підпису.
 def verify(message, signature, public_key):
-    """
-    Функція перевірки цифрового підпису.
-    """
     e, n = public_key
     return pow(signature, e, n) == message
 
-# Приклад використання
-
-# Генерація ключів для абонентів A і B
-bit_length = 256
-private_a, public_a, private_b, public_b = rsa_setup(bit_length)
-
-# Повідомлення для шифрування та підпису
-message = 12345  # Наприклад, текст повідомлення в числовому форматі
-
-# Абонент A шифрує повідомлення для B
-ciphertext = encrypt(message, public_b)
-print(f"Зашифроване повідомлення: {ciphertext}")
-
-# Абонент B розшифровує повідомлення
-decrypted_message = decrypt(ciphertext, private_b)
-print(f"Розшифроване повідомлення: {decrypted_message}")
-
-# Абонент A створює цифровий підпис для повідомлення
-signature = sign(message, private_a)
-print(f"Цифровий підпис: {signature}")
-
-# Абонент B перевіряє цифровий підпис
-is_valid = verify(message, signature, public_a)
-print(f"Цифровий підпис вірний: {is_valid}")
-
-# ---------------- option 5 ----------------------------------------
+#-------------------------option 5-------------------------
 
 def send_key(k, sender_private_key, sender_public_key, recipient_public_key):
     """
@@ -241,23 +171,79 @@ def receive_key(encrypted_key, encrypted_signature, recipient_private_key, sende
     
     return decrypted_key, is_valid_signature
 
-# Демонстрація роботи протоколу
-bit_length = 256
-private_a, public_a, private_b, public_b = rsa_setup(bit_length)
+#---------------------------------------------------------------------
 
-# Випадковий ключ k для передачі
-k = random.randint(1, public_b[1] - 1)
+def main(bit_length=256):
+    random_prime = generate_random_prime(bit_length)
+    print("\n")
+    print("-"*100)
+    print(f"Випадкове просте число ({bit_length} біт): {random_prime}\n")
 
-print(f"Секретний ключ для передачі: {k}")
+# ---------------------------------------------------------------------
+    pair_A, pair_B = generate_prime_pairs(bit_length)
+    print("-"*100)
+    print(f"Пара для абонента A:\n\tp = {pair_A[0]},\n\tq = {pair_A[1]}\n")
+    print(f"Пара для абонента B: \n\tp1 = {pair_B[0]}, \n\tq1 = {pair_B[1]}\n")
 
-# Відправник A формує повідомлення
-encrypted_key, encrypted_signature = send_key(k, private_a, public_a, public_b)
+#----------------------------------------------------------------------
+    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
+    print("-"*100)
+    print(f"Відкритий ключ A:\n\te = {public_a[0]},\n\tn = {public_a[1]}\n")
+    print(f"Секретний ключ A:\n\td = {private_a[0]},\n\tp = {private_a[1]},\n\tq = {private_a[2]}\n")
+    print(f"Відкритий ключ B:\n\te = {public_b[0]},\n\tn = {public_b[1]}\n")
+    print(f"Секретний ключ B:\n\td = {private_b[0]},\n\tp = {private_b[1]},\n\tq = {private_b[2]}\n")
 
-print(f"Зашифрований ключ: {encrypted_key}")
-print(f"Зашифрований підпис: {encrypted_signature}")
+#----------------------------------------------------------------------
+    # Генерація ключів для абонентів A і B
+    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
 
-# Одержувач B приймає повідомлення
-decrypted_key, is_valid_signature = receive_key(encrypted_key, encrypted_signature, private_b, public_a)
+    # Повідомлення для шифрування та підпису
+    message = "My very very very secret message (CVV code of my card number is 777)"  # Наприклад, текст повідомлення в числовому форматі
 
-print(f"Розшифрований ключ: {decrypted_key}")
-print(f"Підпис коректний: {is_valid_signature}")
+    # Абонент A шифрує повідомлення для B
+    ciphertext = encrypt(message, public_b)
+    print("-"*100)
+    print(f"Зашифроване повідомлення: {ciphertext}\n")
+
+    # Абонент B розшифровує повідомлення
+    decrypted_message = decrypt(ciphertext, private_b)
+    print("-"*100)
+    print(f"Розшифроване повідомлення: {decrypted_message}\n")
+
+    # Абонент A створює цифровий підпис для повідомлення
+    signature = sign(message, private_a)
+    print("-"*100)
+    print(f"Цифровий підпис: {signature}\n")
+
+    # Абонент B перевіряє цифровий підпис
+    is_valid = verify(message, signature, public_a)
+    print("-"*100)
+    print(f"Цифровий підпис вірний: {is_valid}\n")
+
+#-----------------------------------------------------------------------
+    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
+
+    # Випадковий ключ k для передачі
+    k = random.randint(1, public_b[1] - 1)
+
+    print("-"*100)
+    print(f"Секретний ключ для передачі: {k}\n")
+
+    # Відправник A формує повідомлення
+    encrypted_key, encrypted_signature = send_key(k, private_a, public_a, public_b)
+
+    print("-"*100)
+    print(f"Зашифрований ключ: {encrypted_key}\n")
+    print(f"Зашифрований підпис: {encrypted_signature}\n")
+
+    # Одержувач B приймає повідомлення
+    decrypted_key, is_valid_signature = receive_key(encrypted_key, encrypted_signature, private_b, public_a)
+
+    print("-"*100)
+    print(f"Розшифрований ключ: {decrypted_key}\n")
+    print(f"Підпис коректний: {is_valid_signature}\n")
+    print("-"*100)
+
+if __name__ == "__main__":
+    bit_length=256
+    main(bit_length)
