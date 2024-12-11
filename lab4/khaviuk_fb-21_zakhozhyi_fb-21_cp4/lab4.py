@@ -62,13 +62,10 @@ def generate_prime_pairs(bit_length):
     # Генерація другої пари для абонента B
     p1 = generate_random_prime(bit_length)
     q1 = generate_random_prime(bit_length)
-
-    # Перевірка умови pq <= p1q1
-    while (p * q) > (p1 * q1):
-        p1 = generate_random_prime(bit_length)
-        q1 = generate_random_prime(bit_length)
-    
-    return (p, q), (p1, q1)
+    # # Перевірка умови pq <= p1q1
+    if p*q <= p1*q1:
+        return (p, q), (p1, q1)
+    return (p1, q1), (p, q)
 
 #-------------------------option 3-------------------------
 
@@ -200,6 +197,7 @@ def main(bit_length=256):
 
     # Повідомлення для шифрування та підпису
     message = 37462138794623786428372
+    print(f"Повідомлення для шифрування та підпису: {message}")
 
     # Абонент A шифрує повідомлення для B
     ciphertext = encrypt(message, public_b)
