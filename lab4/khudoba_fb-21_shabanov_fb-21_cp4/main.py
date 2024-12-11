@@ -22,14 +22,17 @@ def mod_inverse(a, m):
     return x1
 
 # Функція для піднесення до степеня за модулем із використанням схеми Горнера
-def modular_exponentiation(base, exponent, mod):
-    result = 1
-    while exponent > 0:
-        if exponent % 2 == 1:
-            result = (result * base) % mod
-        base = (base * base) % mod
-        exponent //= 2
-    return result
+def horner_modular_exponentiation(x, a, m):
+    y = 1  # Початкове значення
+    k = a.bit_length()  # Довжина експоненти в бітах
+
+    for i in range(k - 1, -1, -1):  # Проходимо біти зліва направо
+        y = (y * y) % m  # Піднесення до квадрата (mod m)
+        if (a >> i) & 1:  # Якщо i-й біт дорівнює 1
+            y = (y * x) % m  # Додаємо внесок у результат
+
+    return y
+
 
 # Генерація e, яке задовольняє умови для RSA
 # def generate_e(phi_n):
@@ -51,19 +54,19 @@ def RSA_GEN(p, q, e):
 
 # Шифрування повідомлення
 def encrypt_message(m, e, n):
-    return modular_exponentiation(m, e, n)
+    return horner_modular_exponentiation(m, e, n)
 
 # Розшифрування повідомлення
 def decrypt_message(c, d, n):
-    return modular_exponentiation(c, d, n)
+    return horner_modular_exponentiation(c, d, n)
 
 # Створення цифрового підпису
 def create_signature(m, d, n):
-    return modular_exponentiation(m, d, n)
+    return horner_modular_exponentiation(m, d, n)
 
 # Перевірка цифрового підпису
 def verify_signature(s, e, n):
-    return modular_exponentiation(s, e, n)
+    return horner_modular_exponentiation(s, e, n)
 
 # Задані прості числа
 p = 36646164541686624240937833154972327964008617161515222144838114780214993351409
