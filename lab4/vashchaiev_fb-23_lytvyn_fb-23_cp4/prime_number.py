@@ -27,7 +27,6 @@ def _pow(x, alpha, m):
 
 def rabin_subtest1(s, x, d, p):
     for r in range(1, 2 if s == 1 else s):
-        #x_r = (x ** (d * (2 ** r))) % p
         x_r = _pow(x, d * (2 ** r), p)
         if x_r == p-1: # -1
             #print("* Сильно псевдопросте за основою x")
@@ -41,8 +40,8 @@ def rabin_subtest1(s, x, d, p):
 # True якщо просте
 def rabin_test(p, k):
     counter = 0
+    s, d = get_s_d(p)    
     while counter < k:
-        s, d = get_s_d(p)
         x = random.randint(2, p)
         if (gcd(x, p) > 1):
             return False
@@ -59,10 +58,14 @@ def rabin_test(p, k):
     return True
 
 def get_p(a, b, k = 5):
+    not_p = 0
     while(True):
         p = random.randrange(2 if a <= 1 else a, b)
-        if (p%2 and p%3 and p%5 and p%7 and rabin_test(p, 5)):
+        if (p%2 and p%3 and p%5 and p%7 and rabin_test(p, k)):
+            print("failed attempts " + str(not_p))
             return p
+        else:
+            not_p += 1
 
 if __name__ == "__main__":
     print(get_p(2 ** 256, 2 ** 512))

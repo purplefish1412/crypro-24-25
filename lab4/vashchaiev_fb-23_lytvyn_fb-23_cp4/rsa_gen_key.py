@@ -45,11 +45,22 @@ def GenerateKeyPair(a, b):
 
 if __name__ == "__main__":
     # При цьому пари чисел беруться так, щоб p * q <= p1 * q1
-    alice = GenerateKeyPair(256, 384)
-    bob = GenerateKeyPair(384, 512)
+    while True:
+        alice = GenerateKeyPair(256, 512)
+        bob = GenerateKeyPair(256, 512)
+        if alice.p * alice.q <= bob.p * bob.q:
+            break
 
-    json_obj.append({"name": "Alice", "my_keys": {"d": alice.d, "p": alice.p, "q": alice.q, "n": alice.n, "e": alice.e}, "open_for_me": {"n": bob.n, "e": bob.e}})
-    json_obj.append({"name": "Bob", "my_keys": {"d": bob.d, "p": bob.p, "q": bob.q, "n": bob.n, "e": bob.e}, "open_for_me": {"n": alice.n, "e": alice.e}})
+    json_obj.append({"name": "Alice", "my_keys": {"d": hex(alice.d)[2:], "p": hex(alice.p)[2:], "q": hex(alice.q)[2:], "n": hex(alice.n)[2:], "e": hex(alice.e)[2:]}, "open_for_me": {"n": hex(bob.n)[2:], "e": hex(bob.e)[2:]}})
+    json_obj.append({"name": "Bob", "my_keys": {"d": hex(bob.d)[2:], "p": hex(bob.p)[2:], "q": hex(bob.q)[2:], "n": hex(bob.n)[2:], "e": hex(bob.e)[2:]}, "open_for_me": {"n": hex(alice.n)[2:], "e": hex(alice.e)[2:]}})
 
     with open("keys.json", "w") as f:
         json.dump(json_obj, f, ensure_ascii=False, indent=4)
+    
+    print("Alice")
+    print("p", len(bin(alice.p)[2:]), "bits", hex(alice.p)[2:])
+    print("q", len(bin(alice.q)[2:]), "bits", hex(alice.q)[2:])
+
+    print("Bob")
+    print("p1", len(bin(bob.p)[2:]), "bits", hex(bob.p)[2:])
+    print("q1", len(bin(bob.q)[2:]), "bits", hex(bob.q)[2:])

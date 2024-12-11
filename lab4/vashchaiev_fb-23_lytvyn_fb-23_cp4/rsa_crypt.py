@@ -1,4 +1,5 @@
 import json
+import random
 import prime_number as pn
 
 class Import_key():
@@ -8,13 +9,13 @@ class Import_key():
         status = False
         for obj in root:
             if obj["name"] == name:
-                self.d = obj["my_keys"]["d"]
-                self.p = obj["my_keys"]["p"]
-                self.q = obj["my_keys"]["q"]
-                self.n = obj["my_keys"]["n"]
-                self.e = obj["my_keys"]["e"]
-                self.o_n = obj["open_for_me"]["n"]
-                self.o_e = obj["open_for_me"]["e"]
+                self.d = int(obj["my_keys"]["d"], 16)
+                self.p = int(obj["my_keys"]["p"], 16)
+                self.q = int(obj["my_keys"]["q"], 16)
+                self.n = int(obj["my_keys"]["n"], 16)
+                self.e = int(obj["my_keys"]["e"], 16)
+                self.o_n = int(obj["open_for_me"]["n"], 16)
+                self.o_e = int(obj["open_for_me"]["e"], 16)
                 status = True
                 break
         if not status:
@@ -50,19 +51,37 @@ def int2txt(number):
 if __name__ == "__main__":
     alice = Import_key("Alice")
     bob = Import_key("Bob")
-    mess_number = txt2int("Hello Bob")
-    # C_alice2bob = Encrypt(mess_number, alice.o_e, alice.o_n)
-    # M_alice2bob = Decrypt(C_alice2bob, bob.d, bob.n)
 
-    # print(int2txt(M_alice2bob))
+    print("Alice -> Bob")
+    mess_number_0 = txt2int("Hello Bob")
+    #mess_number_0 = random.randint(100000, 1000000)
+    print("Open mess:", hex(mess_number_0)[2:])
+    C_alice2bob = Encrypt(mess_number_0, alice.o_e, alice.o_n)
+    print("Encrypted mess:", hex(C_alice2bob)[2:])
 
-    S_from_alice = Sign(mess_number, alice.d, alice.n)
-    print(hex(S_from_alice))
-    print(hex(alice.n))
-    print(hex(alice.e))
-    Bob_verify = Verify(S_from_alice, mess_number, bob.o_e, bob.o_n)
+    M_alice2bob = Decrypt(C_alice2bob, bob.d, bob.n)
+    print("Decrypted mess:", hex(M_alice2bob)[2:])
+    print("Text:", int2txt(M_alice2bob))
 
-    if Bob_verify:
-        print("Yes, it work")
-    else:
-        print("Ohh noooo :>")
+    print("\nBob -> Alice")
+    mess_number_1 = txt2int("Hello Alice")
+    #mess_number_1 = random.randint(100000, 1000000)
+    print("Open mess:", hex(mess_number_1)[2:])
+    C_bob2alice = Encrypt(mess_number_1, bob.o_e, bob.o_n)
+    print("Encrypted mess:", hex(C_bob2alice)[2:])
+    
+    M_bob2alice = Decrypt(C_bob2alice, alice.d, alice.n)
+    print("Decrypted mess:", hex(M_bob2alice)[2:])
+    print("Text:", int2txt(M_bob2alice))
+
+    print("\nAlice -> Bob")
+    S_from_alice = Sign(mess_number_0, alice.d, alice.n)
+    print("S:", hex(S_from_alice)[2:])
+    Bob_verify = Verify(S_from_alice, mess_number_0, bob.o_e, bob.o_n)
+    print("Status:", Bob_verify)
+
+    print("\nBob -> Alice")
+    S_from_bob = Sign(mess_number_1, bob.d, bob.n)
+    print("S:", hex(S_from_bob)[2:])
+    Alice_verify = Verify(S_from_alice, mess_number_0, alice.o_e, alice.o_n) # <---
+    print("Status:", Alice_verify)
