@@ -70,10 +70,7 @@ def generate_prime_pairs(bit_length):
 #-------------------------option 3-------------------------
 
 # Генерує секретний та відкритий ключі для RSA
-def generate_rsa_keypair(bit_length):
-    # Генерація простих чисел p та q
-    p = generate_random_prime(bit_length)
-    q = generate_random_prime(bit_length)
+def generate_rsa_keypair(p, q):
 
     # Обчислення n та функції Ейлера φ(n)
     n = p * q
@@ -95,12 +92,12 @@ def generate_rsa_keypair(bit_length):
     return (d, p, q), (e, n)
 
 # Побудова схем RSA для абонентів A та B
-def rsa_setup(bit_length):
+def rsa_setup(p, q, p1, q1):
     # Генерація ключових пар для абонента A
-    private_key_a, public_key_a = generate_rsa_keypair(bit_length)
+    private_key_a, public_key_a = generate_rsa_keypair(p, q)
 
     # Генерація ключових пар для абонента B
-    private_key_b, public_key_b = generate_rsa_keypair(bit_length)
+    private_key_b, public_key_b = generate_rsa_keypair(p1, q1)
 
     return private_key_a, public_key_a, private_key_b, public_key_b
 
@@ -178,13 +175,13 @@ def main(bit_length=256):
     print(f"Випадкове просте число ({bit_length} біт): {random_prime}\n")
 
 # ---------------------------------------------------------------------
-    pair_A, pair_B = generate_prime_pairs(bit_length)
+    pair_A, pair_B = generate_prime_pairs(bit_length) # this function returns (p, q), (p1, q1) if pq < p1q1
     print("-"*100)
     print(f"Пара для абонента A:\n\tp = {pair_A[0]},\n\tq = {pair_A[1]}\n")
     print(f"Пара для абонента B: \n\tp1 = {pair_B[0]}, \n\tq1 = {pair_B[1]}\n")
 
 #----------------------------------------------------------------------
-    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
+    private_a, public_a, private_b, public_b = rsa_setup(pair_A[0], pair_A[1], pair_B[0], pair_B[1])
     print("-"*100)
     print(f"Відкритий ключ A:\n\te = {public_a[0]},\n\tn = {public_a[1]}\n")
     print(f"Секретний ключ A:\n\td = {private_a[0]},\n\tp = {private_a[1]},\n\tq = {private_a[2]}\n")
@@ -192,16 +189,13 @@ def main(bit_length=256):
     print(f"Секретний ключ B:\n\td = {private_b[0]},\n\tp = {private_b[1]},\n\tq = {private_b[2]}\n")
 
 #----------------------------------------------------------------------
-    # Генерація ключів для абонентів A і B
-    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
-
     # Повідомлення для шифрування та підпису
     message = 37462138794623786428372
-    print(f"Повідомлення для шифрування та підпису: {message}")
 
     # Абонент A шифрує повідомлення для B
     ciphertext = encrypt(message, public_b)
     print("-"*100)
+    print(f"Повідомлення для шифрування та підпису: {message}\n")
     print(f"Зашифроване повідомлення: {ciphertext}\n")
 
     # Абонент B розшифровує повідомлення
@@ -217,8 +211,6 @@ def main(bit_length=256):
     print(f"Цифровий підпис вірний: {is_valid}\n")
 
 #-----------------------------------------------------------------------
-    private_a, public_a, private_b, public_b = rsa_setup(bit_length)
-
     # Випадковий ключ k для передачі
     k = random.randint(1, public_b[1] - 1)
 
