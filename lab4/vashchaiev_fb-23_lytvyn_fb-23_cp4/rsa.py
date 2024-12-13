@@ -2,20 +2,22 @@ import random
 import rsa_gen_key as rgk
 import rsa_crypt as rc
 
-def GenerateSignature(d, n, o_e, o_n):
+def SendKey(d, n, o_e, o_n):
     secret_k = random.randint(0, n - 1)
     secret_S = rc.Sign(secret_k, d, n)
-    open_S = rc.Sign(secret_S, o_e, o_n)
-    open_k = rc.Sign(secret_k, o_e, o_n)
+    open_S = rc.Encrypt(secret_S, o_e, o_n)
+    open_k = rc.Encrypt(secret_k, o_e, o_n)
 
     return open_S, open_k
 
-def VerifySignature(open_S, open_k, d, n, o_e, o_n):
-    secret_S = rc.Sign(open_S, d, n)
-    secret_k = rc.Sign(open_k, d, n)
-    check_k = rc.Sign(secret_S, o_e, o_n)
+def ReceiveKey(open_S, open_k, d, n, o_e, o_n):
+    secret_S = rc.Decrypt(open_S, d, n)
+    secret_k = rc.Decrypt(open_k, d, n)
 
-    return secret_k == check_k
+    if rc.Verify(secret_S, secret_k, o_e, o_n):
+        return secret_k
+    else:
+        return False
 
 if __name__ == "__main__":
     alice_msg = "Hello Bob!"
@@ -30,21 +32,23 @@ if __name__ == "__main__":
     C_alice2bob = rc.Encrypt(alice_text, open_a_e, open_a_n)
     S_from_alice = rc.Sign(alice_text, alice.d, alice.n)
 
-    open_alice_S, open_alice_k = GenerateSignature(alice.d, alice.n, open_a_e, open_a_n)
+    open_alice_S, open_alice_k = SendKey(alice.d, alice.n, open_a_e, open_a_n)
 
     bob_msg = "Hello Alice!"
     bob_text = rc.txt2int(bob_msg)
 
-    if VerifySignature(open_alice_S, open_alice_k, bob.d, bob.n, open_b_e, open_b_n):
-        M_alice2bob = rc.Decrypt(C_alice2bob, bob.d, bob.n)
-        print("Alice's message verified!")
-        print(f"[Bob] Alice's message: {rc.int2txt(M_alice2bob)}")
+    k = ReceiveKey(open_alice_S, open_alice_k, bob.d, bob.n, open_b_e, open_b_n)
+    if k is not False:
+        print(f"Secret k from Alice: {k}")
 
-        if rc.Verify(S_from_alice, M_alice2bob, open_b_e, open_b_n):
-            print("Alice's message wasn't tampered with")
+    M_alice2bob = rc.Decrypt(C_alice2bob, bob.d, bob.n)
+    print(f"[Bob] Alice's message: {rc.int2txt(M_alice2bob)}")
 
-        C_bob2alice = rc.Encrypt(bob_text, open_b_e, open_b_n)
-        S_from_bob = rc.Sign(bob_text, bob.d, bob.n)
+    if rc.Verify(S_from_alice, M_alice2bob, open_b_e, open_b_n):
+        print("Alice's message wasn't tampered with")
+
+    C_bob2alice = rc.Encrypt(bob_text, open_b_e, open_b_n)
+    S_from_bob = rc.Sign(bob_text, bob.d, bob.n)
 
     print()
 
