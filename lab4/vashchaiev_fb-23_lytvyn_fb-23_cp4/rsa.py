@@ -2,11 +2,10 @@ import random
 import rsa_gen_key as rgk
 import rsa_crypt as rc
 
-def SendKey(d, n, o_e, o_n):
-    secret_k = random.randint(0, n - 1)
-    secret_S = rc.Sign(secret_k, d, n)
+def SendKey(k, d, n, o_e, o_n):
+    secret_S = rc.Sign(k, d, n)
     open_S = rc.Encrypt(secret_S, o_e, o_n)
-    open_k = rc.Encrypt(secret_k, o_e, o_n)
+    open_k = rc.Encrypt(k, o_e, o_n)
 
     return open_S, open_k
 
@@ -32,7 +31,10 @@ if __name__ == "__main__":
     C_alice2bob = rc.Encrypt(alice_text, open_a_e, open_a_n)
     S_from_alice = rc.Sign(alice_text, alice.d, alice.n)
 
-    open_alice_S, open_alice_k = SendKey(alice.d, alice.n, open_a_e, open_a_n)
+    gen_k = random.randint(0, alice.n - 1)
+    print(f"Generated k: {gen_k}")
+
+    open_alice_S, open_alice_k = SendKey(gen_k, alice.d, alice.n, open_a_e, open_a_n)
 
     bob_msg = "Hello Alice!"
     bob_text = rc.txt2int(bob_msg)
