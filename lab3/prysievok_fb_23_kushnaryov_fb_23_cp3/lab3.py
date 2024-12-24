@@ -7,6 +7,7 @@ import math
 from collections import Counter
 
 alphabet = 'абвгдежзийклмнопрстуфхцчшщьыэюя'
+alphabet = 'абвгдежзийклмнопрстуфхцчшщыьэюя'
 
 def letter_to_number(letter):
     return alphabet.index(letter.lower())
@@ -94,15 +95,15 @@ def is_meaningful(text, forbidden_grams, frequent_grams, entropy_threshold):
         if gram in text:
             return False
     
-    # Check frequent l-grams
-    frequent_count = sum(text.count(gram) for gram in frequent_grams)
-    if frequent_count < len(frequent_grams) / 2:  # Example threshold
-        return False
+    # # Check frequent l-grams
+    # frequent_count = sum(text.count(gram) for gram in frequent_grams)
+    # if frequent_count < len(frequent_grams) / 2:  # Example threshold
+    #     return False
     
-    # Check entropy
-    entropy = text_entropy(text)
-    if entropy < entropy_threshold:
-        return False
+    # # Check entropy
+    # entropy = text_entropy(text)
+    # if entropy < entropy_threshold:
+    #     return False
 
     return True
 
@@ -174,12 +175,12 @@ if __name__ == "__main__":
     text_cipher = lab1.clean_text_no_spaces(raw_text_cipher)
 
     # Приклад використання
-    n = 5
+    n = 6
     language_bigrams = lab1.get_top_n_bigrams(lab1.get_bigrams_no_overlap(text_alice), n)
     cipher_bigrams = lab1.get_top_n_bigrams(lab1.get_bigrams_no_overlap(text_cipher), n)
 
-    # print(language_bigrams)
-    # print(cipher_bigrams)
+    print(language_bigrams)
+    print(cipher_bigrams)
 
     # Знаходимо ключі
     keys = solve_affine_key(list(cipher_bigrams.keys()), list(language_bigrams.keys()))
