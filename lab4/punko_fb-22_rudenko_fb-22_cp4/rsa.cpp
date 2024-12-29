@@ -107,3 +107,11 @@ std::pair<mpz_class, bool> Participant::receiveMessage(
         
     return {decrypted, is_valid};
 }
+
+mpz_class Participant::sendKey(const mpz_class& shared_key) {
+    return RSA::encrypt(shared_key, partner_e, partner_n);
+}
+
+mpz_class Participant::receiveKey(const mpz_class& encrypted_shared_key) {
+    return RSA::decrypt(encrypted_shared_key, keys.d, keys.n);
+}

@@ -40,6 +40,8 @@ public:
     const std::string& getName() const { return name; }
 
     void setPartnerKey(const std::string& partnerKey);
+    mpz_class sendKey(const mpz_class& shared_key);
+    mpz_class receiveKey(const mpz_class& encrypted_shared_key);
     std::pair<mpz_class, mpz_class> sendMessage(const mpz_class& message);
     std::pair<mpz_class, bool> receiveMessage(const mpz_class& encrypted_message, const mpz_class& signature, const mpz_class& sender_e, const mpz_class& sender_n);
 };

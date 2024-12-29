@@ -11,26 +11,34 @@ mpz_class generateRandomMessage() {
 
 int main(int argc, const char* argv[]) {
     PrimeGenerator generator;
-
     Participant alice("Alice", generator.generatePrime(256), generator.generatePrime(256));
     Participant bob("Bob", generator.generatePrime(256), generator.generatePrime(256));
 
     std::cout << "=== Key Exchange ===\n";
-
     std::string alicePublicKey = alice.getPublicKey();
     std::string bobPublicKey = bob.getPublicKey();
-
     std::cout << "Alice's public key: " << alicePublicKey << "\n";
     std::cout << "Bob's public key: " << bobPublicKey << "\n\n";
-
+    
     alice.setPartnerKey(bobPublicKey);
     bob.setPartnerKey(alicePublicKey);
 
-    std::cout << "=== Message Exchange ===\n";
+    std::cout << "=== Shared Key Exchange ===\n";
+    mpz_class sharedKey = generateRandomMessage();
+    std::cout << "Original shared key: " << sharedKey << "\n";
 
+    mpz_class encryptedSharedKey = alice.sendKey(sharedKey);
+    std::cout << "Encrypted shared key: " << encryptedSharedKey << "\n";
+
+    mpz_class receivedSharedKey = bob.receiveKey(encryptedSharedKey);
+    std::cout << "Decrypted shared key: " << receivedSharedKey << "\n";
+    std::cout << "Shared key exchange " 
+              << (sharedKey == receivedSharedKey ? "successful" : "failed")
+              << "\n\n";
+
+    std::cout << "=== Message Exchange ===\n";
     mpz_class aliceMessage;
     mpz_class bobMessage;
-
     bool aliceMessageProvided = false;
     bool bobMessageProvided = false;
 
@@ -52,7 +60,6 @@ int main(int argc, const char* argv[]) {
     if (!bobMessageProvided) bobMessage = generateRandomMessage();
     
     std::cout << "Alice's original message: " << aliceMessage << "\n";
-
     auto [encrypted1, signature1] = alice.sendMessage(aliceMessage);
     std::cout << "Encrypted message: " << encrypted1 << "\n";
     std::cout << "Signature: " << signature1 << "\n\n";
@@ -61,13 +68,11 @@ int main(int argc, const char* argv[]) {
         encrypted1, signature1,
         alice.getKeys().e, alice.getKeys().n
     );
-
     std::cout << "Bob received:\n"
               << "Decrypted message: " << decrypted1 << "\n"
               << "Signature valid: " << (isValid1 ? "Yes" : "No") << "\n\n";
 
     std::cout << "Bob's original message: " << bobMessage << "\n";
-
     auto [encrypted2, signature2] = bob.sendMessage(bobMessage);
     std::cout << "Encrypted message: " << encrypted2 << "\n";
     std::cout << "Signature: " << signature2 << "\n\n";
@@ -76,7 +81,6 @@ int main(int argc, const char* argv[]) {
         encrypted2, signature2,
         bob.getKeys().e, bob.getKeys().n
     );
-
     std::cout << "Alice received:\n"
               << "Decrypted message: " << decrypted2 << "\n"
               << "Signature valid: " << (isValid2 ? "Yes" : "No") << "\n";
