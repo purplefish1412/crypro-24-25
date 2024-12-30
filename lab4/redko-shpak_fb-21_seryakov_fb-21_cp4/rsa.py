@@ -226,10 +226,9 @@ class RSAMessage:
     
     @staticmethod
     def calculate_block_size(n: int) -> int:
-        """ обчислює безпечний розмір блоку для модуля n """
-        max_bits = n.bit_length() - 8
-        bytes_size = max_bits // 8
-        return bytes_size - (bytes_size % 4)
+        # розмір блоку в байтах - це просто к-сть байт в n 1
+        # (мінус 1 для гарантії, що блок буде менше n)
+        return (n.bit_length() - 1) // 8
 
     @staticmethod
     def from_blocks(blocks: List[int], is_text: bool, block_size: int, original_bytes_length: int = 0) -> 'RSAMessage':
@@ -269,35 +268,23 @@ class RSAMessage:
         logging.info(f"Створено {len(self.blocks)} блоків")
     
     def _prepare_number_blocks(self, number: int, block_size: int):
-        """ розбиває числове повідомлення на блоки (якщо велике) """
-        logging.info(f"Підготовка числового повідомлення: {number} символів")
-        bytes_needed = (number.bit_length() + 7) // 8
-        bytes_data = number.to_bytes(bytes_needed, 'big')
-        self.original_bytes_length = len(bytes_data)
+        """ розділяє число на блоки відповідно до розміру модуля """
+        max_block = (1 << (block_size * 8)) - 1  # макс значення блоку
+        number_str = str(number)  # в рядок
+        block_size_dec = len(str(max_block))  # розмір блоку в десяткових цифрах
         
-        for i in range(0, len(bytes_data), block_size):
-            block = bytes_data[i:i + block_size]
-            padded_block = block.ljust(block_size, b'\x00')
-            block_number = int.from_bytes(padded_block, 'big')
-            self.blocks.append(block_number)
-            logging.info(f"Блок {i//block_size + 1}: {len(block)} байт -> {block_number}")
+        # розділяємо на блоки з кінця
+        blocks = []
+        while number_str:
+            block = number_str[-block_size_dec:] if len(number_str) > block_size_dec else number_str
+            number_str = number_str[:-block_size_dec] if len(number_str) > block_size_dec else ""
+            blocks.insert(0, int(block))
         
-        logging.info(f"Створено {len(self.blocks)} блоків")
+        self.blocks = blocks
     
     def _blocks_to_number(self, blocks: List[int]) -> int:
-        """ конвертує блоки назад у число """
-        all_bytes = bytearray()
-        
-        for i, block in enumerate(blocks):
-            block_bytes = block.to_bytes(self.block_size, 'big')
-            if i == len(blocks) - 1:
-                remaining_bytes = self.original_bytes_length - (len(blocks) - 1) * self.block_size
-                block_bytes = block_bytes[:remaining_bytes]
-            all_bytes.extend(block_bytes)
-        
-        result = int.from_bytes(all_bytes, 'big')
-        logging.info(f"Відновлене число: {result}")
-        return result
+        """ об'єднує блоки назад в число конкатенацією"""
+        return int(''.join(str(block) for block in blocks))
 
     def _blocks_to_text(self, blocks: List[int], block_size: int) -> str:
         """ конвертує блоки назад у текст """
@@ -438,7 +425,7 @@ def decrypt(encrypted_blocks: List[int], private_key: RSAPrivateKey, is_text: bo
     block_size = RSAMessage.calculate_block_size(private_key.n)
     decrypted_blocks = []
     
-    logging.info(f"Розшифрування {len(encrypted_blocks)} блоку")
+    logging.info(f"Розшифрування {len(encrypted_blocks)} блоку (-ів)")
     print("\nДані для перевірки в RSA калькуляторі:")
     print("----------------------------------------")
     
