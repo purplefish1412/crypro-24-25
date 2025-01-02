@@ -179,9 +179,9 @@ def SendKey(e2, n2, d1, n1, K=None):
     if (K == None):
         K = generatePrimeNumber(32, 64)
 
-    S1 = Encrypt([K], d1, n1)
+    S1 = Sign([K], d1, n1)
     K2 = Encrypt([K], e2, n2)
-    S2 = Encrypt([S1[0]], e2, n2)
+    S2 = Encrypt([S1[0][1]], e2, n2)
     return [K, K2[0], S2[0]]
 
 
