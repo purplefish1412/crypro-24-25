@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from collections import Counter
+import re
 
 
 def read_file(file_name):
@@ -7,8 +8,17 @@ def read_file(file_name):
         return file.read()
 
 
+def preprocess_text(text):
+    text = text.lower().replace('ё', 'е')
+    text = re.sub(r'[^а-я]', '', text)
+    return text
+
+def save_processed_text(text, file_name="processed_open_text.txt"):
+    with open(file_name, 'w', encoding='utf-8') as file:
+        file.write(text)
+
 def vigenere_encrypt(text, key):
-    alphabet = 'абвгдеёжзийклмнопрстуфхцчшщьыэюя'
+    alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
     m = len(alphabet)
     encrypted_text = ""
     key_indices = [alphabet.index(k) for k in key]
@@ -24,7 +34,7 @@ def vigenere_encrypt(text, key):
 
 
 def calculate_index_of_coincidence(text):
-    alphabet = 'абвгдежзийклмнопрстуфхцчшщьыэюя'
+    alphabet = 'абвгдежзийклмнопрстуфхцчшщъыьэюя'
     m = len(alphabet)
     counts = Counter(char for char in text if char in alphabet)
     n = sum(counts.values())
@@ -57,13 +67,15 @@ keys = {
 }
 
 file_name = "lab_2.txt"
-plain_text = read_file(file_name).lower()
+plain_text = read_file(file_name)
+processed_text = preprocess_text(plain_text)
+save_processed_text(processed_text)
 
 encrypted_texts = {}
 for key_len, key in keys.items():
-    encrypted_texts[key] = vigenere_encrypt(plain_text, key)
+    encrypted_texts[key] = vigenere_encrypt(processed_text, key)
 
-indices = {"Відкритий текст": calculate_index_of_coincidence(plain_text)}
+indices = {"Відкритий текст": calculate_index_of_coincidence(processed_text)}
 for key, encrypted_text in encrypted_texts.items():
     indices[f"Ключ ({len(key)})"] = calculate_index_of_coincidence(encrypted_text)
 
